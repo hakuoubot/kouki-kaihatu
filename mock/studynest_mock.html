@@ -114,7 +114,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .event .ev-d { font-size: 12px; color: var(--muted); }
 .act { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 7; width: min(280px, calc(100% - 32px)); background: #fff; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 8px 30px rgba(58, 46, 63, 0.25); }
 .jin { display: flex; flex-direction: column; gap: 8px; }
-.jin .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.jin .top { position: static; padding: 0; z-index: auto; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .jin .ttl { font-size: 15px; font-weight: 800; }
 .jin .sub { font-size: 12px; color: var(--muted); }
 .jin svg { width: 100%; height: auto; display: block; }
@@ -252,13 +252,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
           <div class="sub">30分勉強するごとにきせかえチケット1枚</div>
         </div>
       </div>
-      <div class="card save">
-        <div class="sub">今月、図書館が閉まったあとに勉強した時間</div>
-        <div class="big" id="saved">14時間40分</div>
-        <div class="calc" id="savedCalc"></div>
-        <div class="bar"><div id="savedBar"></div></div>
-        <div class="sub" id="savedNote"></div>
-      </div>
       <div class="card jin">
         <div class="top"><span class="ttl">会津の陣取りマップ</span><span class="sub">今週の勉強時間</span></div>
         <svg id="jinMap" viewBox="0 0 330 270" role="group" aria-label="会津の市町村ごとの勉強時間。タップで詳しく"></svg>
@@ -358,8 +351,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       walkers: [{ n: 'ゆう', k: 1, lines: ['今日もがんばる', 'おつかれさま'] }] }
   };
   var PRESETS = ['集中してます', '休憩します', 'あと少し！', 'おつかれさま', '今日もがんばる', 'テスト前だね'];
-  // saved travel time: home area -> nearest study facility (from public data)
-  var AREA = { name: '南会津町', facility: '南会津町図書館', close: 18, perDay: 80, days: 11, goal: 20 };
   var TICKET_SEC = 1800;
   var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1174,11 +1165,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     document.getElementById('today').textContent = Math.floor(tot / 3600) + '時間' + pad(Math.floor(tot % 3600 / 60)) + '分';
     drawPreview(document.getElementById('homeAv'), me.skin, me.face);
     renderJin();
-    var days = AREA.days + (st.sec >= TICKET_SEC ? 1 : 0), mins = days * AREA.perDay;
-    document.getElementById('saved').textContent = Math.floor(mins / 60) + '時間' + pad(mins % 60) + '分';
-    document.getElementById('savedCalc').textContent = AREA.facility + 'は' + AREA.close + '時閉館。そのあと仲間と勉強した日：' + days + '日';
-    document.getElementById('savedBar').style.width = Math.min(100, days / AREA.goal * 100) + '%';
-    document.getElementById('savedNote').textContent = st.sec >= TICKET_SEC ? '今日の分もふえました（30分以上勉強した日を数えます）' : '今日も' + AREA.close + '時以降に30分勉強すると +1日';
     var d = new Date(), ev = new Date(d); ev.setHours(21, 0, 0, 0);
     var left = Math.round((ev - d) / 60000);
     document.getElementById('evLeft').textContent = left > 0 ? 'あと' + (left >= 60 ? Math.floor(left / 60) + '時間' : '') + (left % 60) + '分' : (left > -50 ? 'いま開催中' : '明日の21時');
