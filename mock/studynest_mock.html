@@ -1,0 +1,1296 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>おうちもくもく</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
+<style>
+/* Layout: one isometric room fills the screen; HUD floats on top (rooms + tickets) and bottom (timer, one-liner) */
+:root {
+  --sky: #A9D8E6;
+  --card: rgba(255, 255, 255, 0.94);
+  --ink: #3A2E3F;
+  --muted: #6E6276;
+  --line: #E6DCEB;
+  --pink: #FF7FA8;
+  --pink-ink: #B8335F;
+  --mint: #46C2A6;
+  --mint-ink: #146E5B;
+  --sun: #FFC94D;
+  --font: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body { background: var(--sky); color: var(--ink); font-family: var(--font); overflow: hidden; }
+button, input { font-family: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+#app { position: fixed; inset: 0; }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+.top {
+  position: absolute; left: 0; right: 0; top: 0;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; pointer-events: none;
+}
+.top > * { pointer-events: auto; }
+.rooms { display: flex; gap: 2px; background: var(--card); border-radius: 999px; padding: 4px; box-shadow: 0 2px 0 rgba(58, 46, 63, 0.12); }
+.rooms button { border: 0; background: transparent; color: var(--muted); border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 800; min-height: 36px; }
+.rooms button[aria-pressed="true"] { background: var(--pink); color: #fff; }
+.pills { display: flex; gap: 6px; }
+.pill { display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; box-shadow: 0 2px 0 rgba(58, 46, 63, 0.12); }
+
+.toast {
+  position: absolute; left: 50%; top: calc(62px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  background: var(--ink); color: #fff; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 8px 16px; white-space: nowrap;
+}
+
+.bottom {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 8px; align-items: stretch; pointer-events: none;
+}
+.bottom > * { pointer-events: auto; }
+.dock { width: 100%; max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+.timer { background: var(--card); border-radius: 18px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.12); }
+.timer .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.timer .line1 { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.clock { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.state { font-size: 12px; font-weight: 800; color: var(--muted); }
+.state.on { color: var(--pink-ink); }
+.bar { height: 6px; background: #F2ECF4; border-radius: 999px; overflow: hidden; }
+.bar div { height: 100%; width: 0; background: var(--sun); }
+.next { font-size: 11px; color: var(--muted); }
+.acts { display: flex; flex-direction: column; gap: 6px; }
+.acts button { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 6px 10px; font-size: 11px; font-weight: 700; min-height: 32px; white-space: nowrap; }
+.say { background: var(--card); border-radius: 18px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.12); }
+.say .cap { font-size: 11px; color: var(--muted); }
+.presets { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.presets button { flex-shrink: 0; border: 0; background: #FFE3EC; color: var(--pink-ink); font-weight: 700; border-radius: 999px; padding: 8px 12px; font-size: 12px; min-height: 36px; }
+.free-say { display: flex; gap: 8px; }
+.free-say input { flex: 1; min-width: 0; border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.free-say button { border: 0; background: var(--pink); color: #fff; font-weight: 800; border-radius: 12px; padding: 0 16px; font-size: 13px; min-height: 44px; }
+.hint { font-size: 11px; color: var(--ink); text-align: center; margin: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (max-width: 400px) { .rooms button { padding: 8px 9px; font-size: 12px; } }
+@media (hover: none) { .hint { display: none; } }
+
+/* bottom tab bar */
+.tabs {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: #FFFFFF; border-top: 1px solid var(--line);
+  padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+}
+.tabs button { border: 0; background: transparent; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 800; min-height: 54px; border-radius: 14px; }
+.tabs button[aria-current="page"] { color: var(--pink-ink); background: #FFE3EC; }
+
+/* full screens (home / gacha / closet) */
+.screen {
+  position: absolute; inset: 0; z-index: 1; overflow-y: auto; background: #FFF6FA;
+  padding-top: calc(64px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.top { z-index: 3; }
+.toast { z-index: 6; }
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.h { margin: 4px 0 0; font-size: 15px; font-weight: 800; }
+.card { background: #fff; border-radius: 20px; padding: 16px; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.08); }
+.hello { display: flex; align-items: center; gap: 14px; }
+.save { display: flex; flex-direction: column; gap: 4px; border: 2px solid var(--mint); }
+.save .big { font-size: 30px; font-weight: 800; color: var(--mint-ink); font-variant-numeric: tabular-nums; }
+.save .sub { font-size: 12px; color: var(--muted); }
+.save .calc { font-size: 13px; font-weight: 700; }
+.save .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 4px 0; }
+.save .bar div { height: 100%; background: var(--mint); border-radius: 99px; }
+.event { width: 100%; border: 0; text-align: left; background: #FFF4D6; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.08); }
+.event .ev-t { font-size: 15px; font-weight: 800; color: #8A5A00; }
+.event .ev-d { font-size: 12px; color: var(--muted); }
+.act { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 7; width: min(280px, calc(100% - 32px)); background: #fff; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 8px 30px rgba(58, 46, 63, 0.25); }
+.jin { display: flex; flex-direction: column; gap: 8px; }
+.jin .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.jin .ttl { font-size: 15px; font-weight: 800; }
+.jin .sub { font-size: 12px; color: var(--muted); }
+.jin svg { width: 100%; height: auto; display: block; }
+.jin .tile { cursor: pointer; }
+.jin .tile:focus-visible rect { stroke: var(--pink); stroke-width: 3; }
+.jin .info { background: #F4FBF8; border-radius: 14px; padding: 10px 12px; font-size: 13px; line-height: 1.6; }
+.jin .info b { font-size: 14px; }
+.jin .legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+.jin .legend i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+.q { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 7; width: min(320px, calc(100% - 32px)); background: #fff; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 8px 30px rgba(58, 46, 63, 0.25); }
+.q .q-tag { font-size: 11px; font-weight: 800; color: var(--mint-ink); }
+.q .q-t { font-weight: 800; font-size: 15px; }
+.q .q-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.q .q-opts button { border: 0; border-radius: 12px; min-height: 44px; font-weight: 800; font-size: 13px; background: #E9F7F2; color: var(--mint-ink); }
+.q .q-note { font-size: 11px; color: var(--muted); }
+.q .x { border: 0; background: transparent; color: var(--muted); min-height: 36px; font-weight: 700; }
+.act-n { font-weight: 800; text-align: center; }
+.act button { border: 0; border-radius: 14px; min-height: 44px; font-weight: 800; font-size: 14px; background: #F3EEF6; }
+.act .cheer { background: var(--pink); color: #fff; }
+.act-row { display: flex; gap: 8px; }
+.act-row button { flex: 1; color: var(--pink-ink); }
+.act .x { background: transparent; color: var(--muted); min-height: 36px; }
+.hello .big { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.hello .sub { font-size: 12px; color: var(--muted); }
+.roomcard { width: 100%; border: 0; background: #fff; border-radius: 18px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; text-align: left; min-height: 76px; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.08); }
+.roomcard .mark { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #fff; flex-shrink: 0; }
+.roomcard .t { font-size: 15px; font-weight: 800; }
+.roomcard .d { font-size: 12px; color: var(--muted); }
+.roomcard .n { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--mint-ink); white-space: nowrap; }
+.stage { display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 250px; justify-content: center; text-align: center; }
+.stage .rar { font-size: 14px; font-weight: 800; }
+.stage .nm { font-size: 18px; font-weight: 800; }
+.stage .note { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.badge { font-size: 11px; font-weight: 800; color: var(--ink); background: var(--sun); border-radius: 999px; padding: 3px 10px; }
+.shake { animation: shake 0.6s ease-in-out; }
+@keyframes shake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-8deg); } 40% { transform: rotate(8deg); } 60% { transform: rotate(-5deg); } 80% { transform: rotate(5deg); } }
+@media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+.pull { border: 0; border-radius: 16px; padding: 14px; font-size: 15px; font-weight: 800; min-height: 54px; width: 100%; }
+.pull.t { background: var(--sun); color: var(--ink); }
+.pull.g { background: var(--mint); color: #fff; }
+.pull:disabled { background: #E6DCEB; color: var(--muted); cursor: default; }
+.lineup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lineup div { background: #fff; border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.lineup i { width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0; }
+.lineup b { margin-left: auto; font-size: 11px; }
+.closet { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.closet button { border: 2px solid transparent; background: #fff; border-radius: 16px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; min-height: 120px; }
+.closet button[aria-pressed="true"] { border-color: var(--pink); }
+.closet button:disabled { color: var(--muted); cursor: default; }
+.closet canvas, .stage canvas, .hello canvas { display: block; }
+.namerow { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; color: var(--muted); }
+.namerow input { width: 9em; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 14px; font-weight: 700; text-align: center; color: var(--ink); background: #fff; }
+.seg { display: flex; gap: 4px; background: #fff; border-radius: 999px; padding: 4px; align-self: center; box-shadow: 0 2px 0 rgba(58, 46, 63, 0.08); }
+.seg button { border: 0; background: transparent; color: var(--muted); border-radius: 999px; padding: 8px 20px; font-size: 13px; font-weight: 800; min-height: 38px; }
+.seg button[aria-pressed="true"] { background: var(--pink); color: #fff; }
+.cats { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.cats button { flex-shrink: 0; border: 0; background: #fff; color: var(--muted); border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 800; min-height: 36px; }
+.cats button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.opts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.opts button { border: 2px solid transparent; background: #fff; border-radius: 14px; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 700; min-height: 84px; justify-content: center; }
+.opts button[aria-pressed="true"] { border-color: var(--pink); }
+.opts canvas { display: block; }
+.opts .sw { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(58, 46, 63, 0.25); }
+</style>
+
+<div id="app">
+  <canvas id="c" aria-label="斜め見下ろしの自習室。光っているイスをタップすると座ります。ほかの人をタップするとがんばれスタンプを送れます"></canvas>
+
+  <header class="top">
+    <div class="rooms" id="roomsBar" role="group" aria-label="部屋をえらぶ">
+      <button type="button" data-room="region" aria-pressed="true">会津地域</button>
+      <button type="button" data-room="anon" aria-pressed="false">全国</button>
+      <button type="button" data-room="friends" aria-pressed="false">なかよし</button>
+    </div>
+    <div class="pills">
+      <div class="pill" id="nearPill" title="近くにいる人">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8335F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M17 14.5a5 5 0 0 1 4.5 5"></path></svg>
+        <span>近く <span id="near">0</span>人</span>
+      </div>
+      <div class="pill" title="ガチャチケット">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C98A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 0 8v2h18v-2a2 2 0 0 0 0-8V6H3z"></path><path d="M14 6v12" stroke-dasharray="2 2"></path></svg>
+        <span id="tickets">2</span>
+      </div>
+      <div class="pill" title="ジェム">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#146E5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"></path><path d="M2 9h20"></path></svg>
+        <span id="gems">300</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <div class="q" id="qBox" role="dialog" aria-label="ワンタップ調査" hidden>
+    <div class="q-tag">ワンタップ調査 ・ 答えるとチケット+1</div>
+    <div class="q-t" id="qT"></div>
+    <div class="q-opts" id="qOpts"></div>
+    <div class="q-note">答えは市町村ごとに集計して、市や町に返します。名前や家の場所は送りません。</div>
+    <button type="button" class="x" id="qSkip">今日は答えない</button>
+  </div>
+  <div class="act" id="act" role="dialog" aria-label="この人に" hidden>
+    <div class="act-n" id="actName"></div>
+    <button type="button" id="actCheer" class="cheer">「がんばれ」を送る</button>
+    <div class="act-row"><button type="button" id="actBlock">ブロック</button><button type="button" id="actReport">通報</button></div>
+    <button type="button" id="actClose" class="x">とじる</button>
+  </div>
+
+  <div class="bottom" id="roomHud">
+    <div class="dock">
+      <div class="timer">
+        <div class="main">
+          <div class="line1"><span class="clock" id="clock">0:00:00</span><span class="state" id="state">光っているイスに座ろう</span></div>
+          <div class="bar"><div id="prog"></div></div>
+          <div class="next" id="next">次のチケットまで 30:00</div>
+        </div>
+        <div class="acts">
+          <button type="button" id="standBtn" hidden>立ち上がる</button>
+          <button type="button" id="skipBtn">+30分（デモ）</button>
+        </div>
+      </div>
+      <form class="say" id="say">
+        <div class="cap" id="sayCap">チャット（電話番号・SNSのID・NGワードは自動でかくれます）</div>
+        <div class="free-say"><input id="chatIn" type="text" maxlength="40" placeholder="メッセージを入力" aria-label="チャット"><button type="submit">送信</button></div>
+        <div class="presets" id="presets"></div>
+      </form>
+      <p class="hint">床をタップで歩く ・ 光るイスで着席 ・ 人をタップで応援・ブロック</p>
+    </div>
+  </div>
+
+  <section class="screen" id="scr-home" aria-label="ホーム">
+    <div class="wrap">
+      <div class="card hello">
+        <canvas id="homeAv" width="160" height="192" style="width:80px;height:96px" aria-hidden="true"></canvas>
+        <div>
+          <div class="sub">今日の勉強時間</div>
+          <div class="big" id="today">1時間12分</div>
+          <div class="sub">30分勉強するごとにきせかえチケット1枚</div>
+        </div>
+      </div>
+      <div class="card save">
+        <div class="sub">今月、図書館が閉まったあとに勉強した時間</div>
+        <div class="big" id="saved">14時間40分</div>
+        <div class="calc" id="savedCalc"></div>
+        <div class="bar"><div id="savedBar"></div></div>
+        <div class="sub" id="savedNote"></div>
+      </div>
+      <div class="card jin">
+        <div class="top"><span class="ttl">会津の陣取りマップ</span><span class="sub">今週の勉強時間</span></div>
+        <svg id="jinMap" viewBox="0 0 330 270" role="group" aria-label="会津の市町村ごとの勉強時間。タップで詳しく"></svg>
+        <div class="legend"><i style="background:#E6DCEB"></i>5人未満(非表示) <i style="background:#BFE9DA;margin-left:6px"></i>少ない <i style="background:#1E9C7E"></i>多い <span style="margin-left:auto">位置は模式図</span></div>
+        <div class="info" id="jinInfo"></div>
+      </div>
+      <button type="button" class="card event" data-enter="region">
+        <span class="ev-t">今夜 21:00 みんなで勉強タイム</span>
+        <span class="ev-d">会津地域の部屋で50分 ・ <span id="evLeft"></span></span>
+      </button>
+      <h2 class="h">自習室をえらぶ</h2>
+      <button type="button" class="roomcard" data-enter="region"><span class="mark" style="background:#46C2A6">会</span><span><span class="t">会津地域の部屋</span><br><span class="d">会津若松市と周辺の町村の中高生だけ</span></span><span class="n">46人</span></button>
+      <button type="button" class="roomcard" data-enter="anon"><span class="mark" style="background:#A08CE0">全</span><span><span class="t">全国もくもく部屋</span><br><span class="d">名前は出さずに、だまって集中</span></span><span class="n">128人</span></button>
+      <button type="button" class="roomcard" data-enter="friends"><span class="mark" style="background:#FF7FA8">友</span><span><span class="t">なかよし部屋</span><br><span class="d">招待した友だちだけ</span></span><span class="n">3人</span></button>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-gacha" aria-label="ガチャ" hidden>
+    <div class="wrap">
+      <div class="card stage">
+        <div id="gIdle">
+          <div class="nm">勉強ガチャ</div>
+          <p class="note">勉強でたまるチケット、またはジェムで引けます。<br>★マークのスキンはチケットでしか出ません。<br>ジェムの購入は保護者の設定で月500円まで。</p>
+        </div>
+        <div id="gResult" hidden>
+          <div class="rar" id="gRar"></div>
+          <canvas id="gAv" width="240" height="288" style="width:120px;height:144px;margin:0 auto" aria-hidden="true"></canvas>
+          <div class="nm" id="gName"></div>
+          <div><span class="badge" id="gLimited" hidden>勉強限定スキン</span></div>
+          <p class="note" id="gNote"></p>
+        </div>
+      </div>
+      <button type="button" class="pull t" id="pullT">チケットで引く（1枚）</button>
+      <button type="button" class="pull g" id="pullG">ジェムで引く（150）</button>
+      <h2 class="h">ラインナップ</h2>
+      <div class="lineup" id="lineup"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-closet" aria-label="きせかえ" hidden>
+    <div class="wrap">
+      <div class="card stage" style="min-height:0">
+        <canvas id="cAv" width="280" height="336" style="width:140px;height:168px" aria-hidden="true"></canvas>
+        <div class="namerow"><label for="nameIn">なまえ</label><input id="nameIn" type="text" maxlength="8" value="あなた" autocomplete="off"></div>
+        <div class="note" id="cCount"></div>
+      </div>
+      <div class="seg" role="group" aria-label="きせかえの種類">
+        <button type="button" data-seg="face" aria-pressed="true">キャラ作成</button>
+        <button type="button" data-seg="clothes" aria-pressed="false">ふく</button>
+      </div>
+      <div id="facePane" class="wrap" style="gap:10px;width:100%">
+        <div class="cats" id="cats" role="group" aria-label="パーツ"></div>
+        <div class="opts" id="opts"></div>
+        <button type="button" class="pull t" id="randomBtn" style="min-height:48px;font-size:14px">おまかせで作る</button>
+      </div>
+      <div id="clothesPane" hidden>
+        <div class="closet" id="closet"></div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="tabs" aria-label="メニュー">
+    <button type="button" data-tab="home" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>ホーム</button>
+    <button type="button" data-tab="room"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16"></path><path d="M6 19v-6h12v6"></path><path d="M9 13V8h6v5"></path><path d="M12 5v3"></path></svg>自習室</button>
+    <button type="button" data-tab="gacha"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"></circle><path d="M6 9h12"></path><path d="M8 15l-1 6h10l-1-6"></path></svg>ガチャ</button>
+    <button type="button" data-tab="closet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4l3 2 3-2 5 3-2 4-2-1v10H8V10l-2 1-2-4z"></path></svg>きせかえ</button>
+  </nav>
+</div>
+
+<script>
+(function () {
+  var TW = 64, TH = 32, W = 12, H = 10, WALLH = 128;
+  var SKINS = [
+    { name: '制服ブルー', body: '#4F6FD0', hair: '#4A3426', r: 'N', style: 'uniform', shoe: '#5A3A28' },
+    { name: 'パーカー・ミント', body: '#46C2A6', hair: '#2E2A2A', r: 'R', style: 'hoodie', shoe: '#FFFFFF' },
+    { name: 'カーディガン・ベージュ', body: '#E8B27E', hair: '#7A4A2A', r: 'R', style: 'cardigan', shoe: '#7A5A48' },
+    { name: '夜ふかしパジャマ', body: '#A08CE0', hair: '#2B2547', r: 'SR', acc: 'cap', style: 'pajama', shoe: '#FFD6E2' },
+    { name: '合格ハチマキ', body: '#F0675A', hair: '#2E2A2A', r: 'SR', acc: 'band', limited: true, style: 'jersey', shoe: '#FFFFFF' },
+    { name: '図書館の魔法使い', body: '#3E6E9C', hair: '#D7DAE2', r: 'SSR', acc: 'hat', limited: true, style: 'robe', shoe: '#4B3A2C' },
+    { name: 'ステージ衣装', body: '#FF9FC0', hair: '#F5C85C', r: 'SSR', acc: 'ribbon', style: 'idol', shoe: '#FF5C93' },
+    { name: 'ひよこイエロー', body: '#F5C85C', hair: '#5A3A28', r: 'N', style: 'hoodie', shoe: '#F0675A' }
+  ];
+  var RAR_COLOR = { N: '#6E6276', R: '#146E5B', SR: '#6A4FC4', SSR: '#B8335F' };
+  var RAR_LABEL = { N: 'N', R: '★ R', SR: '★★ SR', SSR: '★★★ SSR' };
+  var WEIGHT = { N: 40, R: 30, SR: 20, SSR: 10 };
+  var MODES = {
+    region: { title: '会津地域の部屋',
+      seated: [{ s: 1, n: 'ゆず(坂下)', k: 1, m: '集中してます' }, { s: 3, n: 'しずく(若松)', k: 5, m: 'あと少し！' }, { s: 4, n: 'たろう(猪苗代)', k: 0, m: '' },
+               { s: 6, n: 'kei(喜多方)', k: 2, m: '' }, { s: 8, n: 'もち(柳津)', k: 3, m: '今日もがんばる' }, { s: 10, n: 'そら(会津美里)', k: 4, m: '' }],
+      walkers: [{ n: 'りん(会津若松)', k: 6, lines: ['休憩します', 'おつかれさま'] }, { n: 'なな(只見)', k: 7, lines: ['休憩します', '今日もがんばる'] }] },
+    anon: { title: '全国もくもく部屋',
+      seated: [{ s: 0, n: '名無しさん', k: 1, m: '集中してます' }, { s: 2, n: '名無しさん', k: 3, m: '' }, { s: 4, n: '名無しさん', k: 2, m: 'あと少し！' },
+               { s: 7, n: '名無しさん', k: 0, m: '' }, { s: 9, n: '名無しさん', k: 6, m: '' }, { s: 11, n: '名無しさん', k: 4, m: '休憩します' }],
+      walkers: [{ n: '名無しさん', k: 5, lines: ['休憩します', 'おつかれさま'] }] },
+    friends: { title: 'なかよし部屋',
+      seated: [{ s: 7, n: 'はる', k: 6, m: 'テスト前だね' }, { s: 8, n: 'みお', k: 4, m: '' }],
+      walkers: [{ n: 'ゆう', k: 1, lines: ['今日もがんばる', 'おつかれさま'] }] }
+  };
+  var PRESETS = ['集中してます', '休憩します', 'あと少し！', 'おつかれさま', '今日もがんばる', 'テスト前だね'];
+  // saved travel time: home area -> nearest study facility (from public data)
+  var AREA = { name: '南会津町', facility: '南会津町図書館', close: 18, perDay: 80, days: 11, goal: 20 };
+  var TICKET_SEC = 1800;
+  var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- room layout ----------
+  var SEAT_X = [2, 3, 4, 7, 8, 9], SEAT_Y = [2, 6];
+  var seats = [];
+  SEAT_Y.forEach(function (cy) { SEAT_X.forEach(function (cx) { seats.push({ idx: seats.length, x: cx, y: cy, who: null }); }); });
+  var props = []; // static objects: {x,y,kind}
+  seats.forEach(function (s) { props.push({ x: s.x, y: s.y + 1, kind: 'desk', tint: s.idx }); });
+  props.push({ x: 0, y: 2, kind: 'shelf' }, { x: 0, y: 3, kind: 'shelf' }, { x: 0, y: 0, kind: 'plant' }, { x: 11, y: 0, kind: 'plant' },
+             { x: 0, y: 8, kind: 'water' }, { x: 11, y: 4, kind: 'plant' }, { x: 6, y: 0, kind: 'board' });
+  var blocked = {};
+  props.forEach(function (p) { blocked[p.x + ',' + p.y] = true; });
+  var chairAt = {};
+  seats.forEach(function (s) { chairAt[s.x + ',' + s.y] = s; });
+
+  function P(x, y, z) { return [(x - y) * TW / 2, (x + y) * TH / 2 - (z || 0)]; }
+
+  // ---------- canvas ----------
+  var canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+  var vw = 0, vh = 0, dpr = 1, scale = 1, camX = 32, camY = 150;
+  function resize() {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    vw = canvas.clientWidth; vh = canvas.clientHeight;
+    canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
+    scale = vw < 520 ? 0.92 : Math.min(1.3, vw / 820, (vh - 190) / 540);
+  }
+  function fits() { return (W + H) * TW / 2 * scale + 40 < vw; }
+  window.addEventListener('resize', resize); resize();
+  function anchorY() { return fits() ? (vh - 190) / 2 + 10 : vh * 0.4; }
+
+  // ---------- drawing helpers ----------
+  function poly(pts, fill, stroke) {
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+  }
+  function isoBox(x0, y0, x1, y1, z0, z1, top, left, right) {
+    poly([P(x0, y1, z1), P(x1, y1, z1), P(x1, y1, z0), P(x0, y1, z0)], left);
+    poly([P(x1, y0, z1), P(x1, y1, z1), P(x1, y1, z0), P(x1, y0, z0)], right);
+    poly([P(x0, y0, z1), P(x1, y0, z1), P(x1, y1, z1), P(x0, y1, z1)], top);
+  }
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function onRightWall(x, z, draw) { var p = P(x, 0, z); ctx.save(); ctx.translate(p[0], p[1]); ctx.transform(1, 0.5, 0, 1, 0, 0); draw(); ctx.restore(); }
+  function onLeftWall(y, z, draw) { var p = P(0, y, z); ctx.save(); ctx.translate(p[0], p[1]); ctx.transform(1, -0.5, 0, 1, 0, 0); draw(); ctx.restore(); }
+
+  function drawRoom(t) {
+    // floor
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+      var aisle = x === 5 || x === 6;
+      var c = aisle ? ((x + y) % 2 ? '#F7C6D3' : '#F9D3DE') : ((x + y) % 2 ? '#F4E3C6' : '#F9ECD5');
+      poly([P(x, y), P(x + 1, y), P(x + 1, y + 1), P(x, y + 1)], c);
+    }
+    // floor edge (front thickness)
+    poly([P(0, H), P(W, H), P(W, H, -14), P(0, H, -14)], '#D9B98F');
+    poly([P(W, 0), P(W, H), P(W, H, -14), P(W, 0, -14)], '#C9A77B');
+    // walls
+    poly([P(0, 0), P(0, H), P(0, H, WALLH), P(0, 0, WALLH)], '#DDF0F6');
+    poly([P(0, 0), P(W, 0), P(W, 0, WALLH), P(0, 0, WALLH)], '#C8E6EF');
+    poly([P(0, 0), P(0, H), P(0, H, 10), P(0, 0, 10)], '#B9D3DC');
+    poly([P(0, 0), P(W, 0), P(W, 0, 10), P(0, 0, 10)], '#A9C8D2');
+    poly([P(0, 0, WALLH), P(0, H, WALLH), P(-0.25, H, WALLH), P(-0.25, -0.25, WALLH), P(W, -0.25, WALLH), P(W, 0, WALLH)], '#FFFFFF');
+    // windows on the right wall (late afternoon sky)
+    [[1.4, 4.4], [7.6, 10.6]].forEach(function (w) {
+      onRightWall(w[0], 104, function () {
+        var ww = (w[1] - w[0]) * TW / 2, wh = 60;
+        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(-4, -4, ww + 8, wh + 8);
+        var g = ctx.createLinearGradient(0, 0, 0, wh); g.addColorStop(0, '#8EC5F2'); g.addColorStop(1, '#FFD7B0');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, ww, wh);
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.beginPath(); ctx.arc(ww * 0.25, wh * 0.45, 9, 0, 7); ctx.arc(ww * 0.25 + 12, wh * 0.4, 12, 0, 7); ctx.arc(ww * 0.25 + 26, wh * 0.47, 8, 0, 7); ctx.fill();
+        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(ww / 2 - 2, 0, 4, wh); ctx.fillRect(0, wh / 2 - 2, ww, 4);
+      });
+    });
+    // sign
+    onRightWall(5.1, 112, function () {
+      rr(0, 0, 58, 26, 6); ctx.fillStyle = '#FF7FA8'; ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = '800 11px "M PLUS Rounded 1c", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('しずかに', 29, 8); ctx.fillText('勉強中', 29, 19);
+    });
+    // bulletin board + clock on the left wall
+    onLeftWall(4.6, 100, function () {
+      ctx.fillStyle = '#D9A86C'; ctx.fillRect(0, 0, 100, 52);
+      ctx.fillStyle = '#E9C38F'; ctx.fillRect(4, 4, 92, 44);
+      [['#FFF7A8', 10, 9, '英検'], ['#C9F0E4', 40, 13, '模試'], ['#FFD6E2', 68, 8, '目標']].forEach(function (n) {
+        ctx.fillStyle = n[0]; ctx.fillRect(n[1], n[2], 24, 24);
+        ctx.fillStyle = '#6E6276'; ctx.font = '700 8px "M PLUS Rounded 1c", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n[3], n[1] + 12, n[2] + 12);
+        ctx.fillStyle = '#F0675A'; ctx.beginPath(); ctx.arc(n[1] + 12, n[2] + 2, 2, 0, 7); ctx.fill();
+      });
+    });
+    onLeftWall(8.2, 104, function () {
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(16, 16, 16, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#3A2E3F'; ctx.lineWidth = 2; ctx.stroke();
+      var d = new Date(), hA = (d.getHours() % 12 + d.getMinutes() / 60) / 12 * Math.PI * 2, mA = d.getMinutes() / 60 * Math.PI * 2;
+      ctx.beginPath(); ctx.moveTo(16, 16); ctx.lineTo(16 + Math.sin(hA) * 8, 16 - Math.cos(hA) * 8); ctx.moveTo(16, 16); ctx.lineTo(16 + Math.sin(mA) * 12, 16 - Math.cos(mA) * 12); ctx.stroke();
+    });
+    // free-seat glow
+    seats.forEach(function (s) {
+      if (s.who) return;
+      var a = reduceMotion ? 0.55 : 0.4 + Math.sin(t * 4) * 0.25;
+      poly([P(s.x + 0.08, s.y + 0.08), P(s.x + 0.92, s.y + 0.08), P(s.x + 0.92, s.y + 0.92), P(s.x + 0.08, s.y + 0.92)], 'rgba(70,194,166,' + a + ')');
+    });
+    // proximity ring (Gather-style "near me")
+    var c0 = P(me.px, me.py);
+    ctx.save(); ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(255,127,168,0.7)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(c0[0], c0[1], NEAR_R * TW / Math.SQRT2, NEAR_R * TH / Math.SQRT2, 0, 0, 7); ctx.stroke(); ctx.restore();
+  }
+
+  var DESK_BOOK = ['#5B8DEF', '#F0675A', '#46C2A6', '#A08CE0'];
+  function drawProp(p) {
+    var x = p.x, y = p.y;
+    if (p.kind === 'desk') {
+      isoBox(x + 0.04, y + 0.12, x + 0.96, y + 0.9, 0, 26, '#F6DCB2', '#D9A86C', '#C89058');
+      isoBox(x + 0.2, y + 0.3, x + 0.55, y + 0.6, 26, 29, DESK_BOOK[p.tint % 4], '#3A2E3F', '#3A2E3F');
+      isoBox(x + 0.22, y + 0.32, x + 0.53, y + 0.58, 29, 31, '#FFFFFF', '#E6DCEB', '#E6DCEB');
+      isoBox(x + 0.72, y + 0.2, x + 0.8, y + 0.28, 26, 46, '#FFC94D', '#E3A92A', '#E3A92A');
+      isoBox(x + 0.64, y + 0.14, x + 0.86, y + 0.36, 46, 52, '#FFE28A', '#FFC94D', '#E3A92A');
+    } else if (p.kind === 'shelf') {
+      isoBox(x + 0.05, y + 0.05, x + 0.6, y + 0.95, 0, 78, '#C89058', '#B07B48', '#D9A86C');
+      ['#5B8DEF', '#F0675A', '#46C2A6', '#FFC94D', '#A08CE0'].forEach(function (c, i) {
+        isoBox(x + 0.6, y + 0.1 + i * 0.16, x + 0.62, y + 0.24 + i * 0.16, 44, 62, c, c, c);
+        isoBox(x + 0.6, y + 0.12 + i * 0.16, x + 0.62, y + 0.24 + i * 0.16, 12, 30, c, c, c);
+      });
+    } else if (p.kind === 'plant') {
+      isoBox(x + 0.3, y + 0.3, x + 0.7, y + 0.7, 0, 18, '#E59A6E', '#C9774A', '#B5653B');
+      var c = P(x + 0.5, y + 0.5, 40);
+      ctx.fillStyle = '#5DBB7A'; ctx.beginPath(); ctx.arc(c[0], c[1], 16, 0, 7); ctx.fill();
+      ctx.fillStyle = '#7ED494'; ctx.beginPath(); ctx.arc(c[0] - 7, c[1] - 6, 9, 0, 7); ctx.arc(c[0] + 8, c[1] - 2, 8, 0, 7); ctx.fill();
+    } else if (p.kind === 'water') {
+      isoBox(x + 0.25, y + 0.25, x + 0.75, y + 0.75, 0, 40, '#FFFFFF', '#E6DCEB', '#D8CCE0');
+      isoBox(x + 0.32, y + 0.32, x + 0.68, y + 0.68, 40, 62, '#BDE6F7', '#9BD3EE', '#8CC7E4');
+    } else if (p.kind === 'board') {
+      isoBox(x + 0.1, y + 0.05, x + 0.9, y + 0.2, 0, 70, '#FFFFFF', '#E6DCEB', '#D8CCE0');
+      onRightWall(x + 0.15, 64, function () {
+        ctx.fillStyle = '#3A2E3F'; ctx.font = '800 8px "M PLUS Rounded 1c", sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.fillText('今日の', 2, 4); ctx.fillText('目標', 2, 15);
+        ctx.fillStyle = '#FF7FA8'; ctx.fillText('3時間', 2, 28);
+      });
+    }
+  }
+  function drawChair(s) {
+    var x = s.x, y = s.y;
+    isoBox(x + 0.28, y + 0.3, x + 0.72, y + 0.72, 0, 12, '#FFB3C8', '#F08AA8', '#E27798');
+    isoBox(x + 0.28, y + 0.2, x + 0.72, y + 0.3, 0, 34, '#FFB3C8', '#F08AA8', '#E27798');
+  }
+
+  // ---------- avatars ----------
+  var people = [];
+  var NEAR_R = 2.6;
+  function makePerson(o) {
+    return { name: o.name, skin: SKINS[o.k], face: o.face || faceFor((o.seed || 0) + o.k * 3 + o.name.length, SKINS[o.k].hair), px: o.x + 0.5, py: o.y + 0.5, fx: 0, fy: 1, path: [], seat: null, msg: o.msg || '', tempMsg: '', tempUntil: 0,
+             walk: 0, me: !!o.me, wander: !!o.wander, lines: o.lines || [], idleUntil: 0, speed: o.me ? 3.2 : 1.8 };
+  }
+  var me = makePerson({ name: 'あなた', k: 0, x: 6, y: 9, me: true, face: Object.assign({}, DEFAULT_FACE) });
+  me.fy = -1;
+
+  // ---------- avatar parts (ピグ風: big head, small body, colored line art + soft shading) ----------
+  var OUT = '#3A2E3F';
+  var SKIN_TONES = ['#FFE8D6', '#FFD9BC', '#EDB48C', '#C88A62'];
+  var HAIR_COLORS = ['#4A3426', '#2E2A2A', '#7A4A2A', '#C98B4E', '#F5C85C', '#D7DAE2', '#FF8FB4', '#7FA7F0', '#8E6FD8', '#E25B4B'];
+  var EYE_COLORS = ['#6B4226', '#2B2547', '#3F7FD9', '#2E9C76', '#D24A7A', '#8E6FD8', '#D99A2B'];
+  var PARTS = {
+    hair: [['short', 'ショート'], ['bob', 'ボブ'], ['long', 'ロング'], ['twin', 'ツイン'], ['pony', 'ポニー'], ['odango', 'おだんご'], ['spiky', 'ツンツン'], ['wave', 'ふわふわ']],
+    eye: [['round', 'ぱっちり'], ['kira', 'キラキラ'], ['tare', 'たれ目'], ['tsuri', 'つり目'], ['smile', 'ニコ目'], ['dot', '点目'], ['jito', 'ジト目'], ['wink', 'ウインク']],
+    brow: [['normal', 'ふつう'], ['thick', '太まゆ'], ['komari', '困りまゆ'], ['kiri', 'きりっ'], ['short', 'まろ'], ['none', 'なし']],
+    mouth: [['smile', 'にこっ'], ['open', 'わーい'], ['omega', 'ω'], ['cat', 'ねこ口'], ['small', 'ちょこん'], ['pout', 'むっ'], ['tongue', 'てへ']],
+    cheek: [['pink', 'ほっぺ'], ['none', 'なし'], ['freckle', 'そばかす'], ['heart', 'ハート']],
+    glasses: [['none', 'なし'], ['round', 'まるめがね'], ['square', 'しかく'], ['sun', 'サングラス']]
+  };
+  var DEFAULT_FACE = { hair: 'bob', hairColor: '#4A3426', eye: 'round', eyeColor: '#6B4226', brow: 'normal', mouth: 'smile', skinTone: 0, cheek: 'pink', glasses: 'none' };
+  function faceFor(seed, hairColor) {
+    function pick(arr, n) { return arr[(seed * n + 3) % arr.length][0]; }
+    return { hair: pick(PARTS.hair, 5), hairColor: hairColor, eye: pick(PARTS.eye, 3), eyeColor: EYE_COLORS[(seed * 5) % EYE_COLORS.length], brow: pick(PARTS.brow, 7), mouth: pick(PARTS.mouth, 2),
+             skinTone: (seed * 11) % 3, cheek: seed % 3 === 0 ? 'none' : 'pink', glasses: seed % 5 === 2 ? 'round' : 'none' };
+  }
+  var shadeCache = {};
+  function shade(hex, f) {
+    var key = hex + f; if (shadeCache[key]) return shadeCache[key];
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    var t = f < 0 ? 0 : 255, p = Math.abs(f);
+    var out = 'rgb(' + Math.round(r + (t - r) * p) + ',' + Math.round(g + (t - g) * p) + ',' + Math.round(b + (t - b) * p) + ')';
+    shadeCache[key] = out; return out;
+  }
+  function line(c) { return shade(c, -0.5); }
+  function fillLine(fill, base, lw) { ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = line(base); ctx.lineWidth = lw || 1.3; ctx.lineJoin = 'round'; ctx.stroke(); }
+  function fillStroke(fill) { fillLine(fill, typeof fill === 'string' && fill[0] === '#' ? fill : '#888888'); }
+  function vgrad(y0, y1, c0, c1) { var g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, c0); g.addColorStop(1, c1); return g; }
+
+  function hairGrad(col, hy) { return vgrad(hy - 26, hy + 14, shade(col, 0.22), col); }
+  function hairBack(X, hy, f) {
+    var c = f.hair, col = f.hairColor, back = shade(col, -0.14);
+    ctx.beginPath();
+    if (c === 'bob') rr(X - 23.5, hy - 18, 47, 37, 15);
+    else if (c === 'long') { ctx.moveTo(X - 24, hy - 4); ctx.quadraticCurveTo(X - 27, hy + 30, X - 20, hy + 40); ctx.lineTo(X + 20, hy + 40); ctx.quadraticCurveTo(X + 27, hy + 30, X + 24, hy - 4); ctx.arc(X, hy - 4, 24, 0, Math.PI, true); }
+    else if (c === 'wave') { ctx.arc(X - 18, hy + 11, 10.5, 0, 7); ctx.moveTo(X + 28.5, hy + 11); ctx.arc(X + 18, hy + 11, 10.5, 0, 7); ctx.moveTo(X + 23, hy - 4); ctx.arc(X, hy - 4, 23, 0, 7); }
+    else if (c === 'twin') { ctx.ellipse(X - 28, hy + 14, 8.5, 19, 0.28, 0, 7); ctx.moveTo(X + 36.5, hy + 14); ctx.ellipse(X + 28, hy + 14, 8.5, 19, -0.28, 0, 7); }
+    else if (c === 'pony') ctx.ellipse(X + 21, hy + 10, 8.5, 18, -0.42, 0, 7);
+    else return;
+    fillLine(back, col);
+    // a few strand lines on long back hair
+    if (c === 'long' || c === 'twin') {
+      ctx.strokeStyle = shade(col, -0.32); ctx.lineWidth = 0.9; ctx.beginPath();
+      if (c === 'long') { ctx.moveTo(X - 19, hy + 18); ctx.quadraticCurveTo(X - 21, hy + 30, X - 17, hy + 38); ctx.moveTo(X + 19, hy + 18); ctx.quadraticCurveTo(X + 21, hy + 30, X + 17, hy + 38); }
+      else { ctx.moveTo(X - 28, hy + 2); ctx.quadraticCurveTo(X - 31, hy + 16, X - 26, hy + 28); ctx.moveTo(X + 28, hy + 2); ctx.quadraticCurveTo(X + 31, hy + 16, X + 26, hy + 28); }
+      ctx.stroke();
+    }
+  }
+  function hairShine(X, hy, col) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(X, hy - 2, 16, Math.PI * 1.18, Math.PI * 1.36); ctx.stroke();
+    ctx.beginPath(); ctx.arc(X, hy - 2, 16, Math.PI * 1.5, Math.PI * 1.6); ctx.stroke();
+    ctx.restore();
+  }
+  function hairFront(X, hy, f, front, lx) {
+    var c = f.hair, col = f.hairColor, g = hairGrad(col, hy);
+    if (!front) {
+      ctx.beginPath(); ctx.arc(X, hy - 1, 22, 0, 7); fillLine(g, col);
+      ctx.strokeStyle = shade(col, -0.3); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X, hy - 22); ctx.quadraticCurveTo(X - 3, hy - 6, X, hy + 14); ctx.stroke();
+      if (c === 'pony') { ctx.beginPath(); ctx.ellipse(X, hy + 19, 7.5, 13, 0, 0, 7); fillLine(g, col); ctx.beginPath(); ctx.arc(X, hy + 7, 3.5, 0, 7); fillLine('#FF7FA8', '#FF7FA8'); }
+      if (c === 'odango') { ctx.beginPath(); ctx.arc(X - 14, hy - 21, 8.5, 0, 7); ctx.moveTo(X + 22.5, hy - 21); ctx.arc(X + 14, hy - 21, 8.5, 0, 7); fillLine(g, col); }
+      hairShine(X, hy, col);
+      return;
+    }
+    if (c === 'odango') {
+      ctx.beginPath(); ctx.arc(X - 15, hy - 20, 9, 0, 7); ctx.moveTo(X + 24, hy - 20); ctx.arc(X + 15, hy - 20, 9, 0, 7); fillLine(g, col);
+      ctx.strokeStyle = shade(col, -0.3); ctx.lineWidth = 0.9; ctx.beginPath(); ctx.arc(X - 15, hy - 20, 5, 3.6, 5.4); ctx.moveTo(X + 19.5, hy - 23); ctx.arc(X + 15, hy - 20, 5, 4.0, 5.8); ctx.stroke();
+    }
+    ctx.beginPath();
+    if (c === 'spiky') {
+      ctx.moveTo(X - 22, hy + 3);
+      [[-25, -10], [-18, -14], [-21, -27], [-9, -21], [-4, -33], [3, -22], [12, -31], [14, -19], [25, -21], [21, -8], [24, 3]].forEach(function (p) { ctx.lineTo(X + p[0], hy + p[1]); });
+      ctx.lineTo(X + 16, hy - 5); ctx.lineTo(X + 9 + lx, hy - 1); ctx.lineTo(X + 3 + lx, hy - 9); ctx.lineTo(X - 5 + lx, hy - 1); ctx.lineTo(X - 11, hy - 8); ctx.lineTo(X - 16, hy - 1); ctx.closePath();
+      fillLine(g, col);
+    } else if (c === 'short' || c === 'pony') {
+      ctx.arc(X, hy - 2, 22, Math.PI * 0.98, Math.PI * 2.02);
+      ctx.quadraticCurveTo(X + 17, hy - 3, X + 9 + lx, hy - 9);
+      ctx.quadraticCurveTo(X + 4 + lx, hy - 3, X - 1 + lx, hy - 5);
+      ctx.quadraticCurveTo(X - 8 + lx, hy - 1, X - 22, hy + 3);
+      ctx.closePath(); fillLine(g, col);
+      ctx.beginPath(); ctx.moveTo(X - 21, hy - 4); ctx.quadraticCurveTo(X - 24, hy + 6, X - 19, hy + 12); ctx.quadraticCurveTo(X - 17, hy + 4, X - 16, hy - 2); ctx.closePath();
+      ctx.moveTo(X + 21, hy - 4); ctx.quadraticCurveTo(X + 24, hy + 6, X + 19, hy + 12); ctx.quadraticCurveTo(X + 17, hy + 4, X + 16, hy - 2); ctx.closePath();
+      fillLine(g, col);
+      if (c === 'pony') { ctx.beginPath(); ctx.arc(X + 19, hy - 11, 3.8, 0, 7); fillLine('#FF7FA8', '#FF7FA8'); }
+    } else {
+      ctx.arc(X, hy - 2, 22.5, Math.PI, Math.PI * 2);
+      ctx.lineTo(X + 22.5, hy - 5);
+      if (c === 'wave') { for (var i = 0; i < 4; i++) ctx.quadraticCurveTo(X + 17 - i * 11 + lx, hy, X + 11.5 - i * 11 + lx, hy - 6.5); ctx.lineTo(X - 22.5, hy - 5); }
+      else { ctx.lineTo(X + 14, hy - 5); ctx.quadraticCurveTo(X + 9 + lx, hy - 7, X + 6 + lx, hy - 4); ctx.quadraticCurveTo(X + lx, hy - 8, X - 6 + lx, hy - 4); ctx.quadraticCurveTo(X - 10 + lx, hy - 7, X - 14, hy - 5); ctx.lineTo(X - 22.5, hy - 5); }
+      ctx.closePath(); fillLine(g, col);
+      var len = c === 'long' ? 40 : 25;
+      [-1, 1].forEach(function (s) {
+        ctx.beginPath(); ctx.moveTo(X + s * 23, hy - 10); ctx.quadraticCurveTo(X + s * 25, hy + len * 0.5, X + s * 21, hy - 10 + len); ctx.lineTo(X + s * 16, hy - 12 + len); ctx.quadraticCurveTo(X + s * 17.5, hy + len * 0.3, X + s * 16, hy - 8); ctx.closePath();
+        fillLine(g, col);
+      });
+      if (c === 'twin') { ctx.beginPath(); ctx.arc(X - 22, hy - 8, 3.8, 0, 7); ctx.moveTo(X + 25.8, hy - 8); ctx.arc(X + 22, hy - 8, 3.8, 0, 7); fillLine('#FF7FA8', '#FF7FA8'); }
+    }
+    // strand lines in the bangs
+    ctx.strokeStyle = shade(col, -0.3); ctx.lineWidth = 0.9; ctx.lineCap = 'round'; ctx.beginPath();
+    ctx.moveTo(X - 8 + lx, hy - 19); ctx.quadraticCurveTo(X - 10 + lx, hy - 12, X - 9 + lx, hy - 7);
+    ctx.moveTo(X + 6 + lx, hy - 20); ctx.quadraticCurveTo(X + 8 + lx, hy - 13, X + 7 + lx, hy - 8);
+    ctx.stroke(); ctx.lineCap = 'butt';
+    hairShine(X, hy, col);
+  }
+  function drawEye(x, ey, e, s, f) {
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    var ink = '#2A2030';
+    if (e === '_blink') { ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 4, ey + 1.5); ctx.quadraticCurveTo(x, ey + 3, x + 4, ey + 1.5); ctx.stroke(); return; }
+    if (e === 'smile') { ctx.strokeStyle = ink; ctx.lineWidth = 2.1; ctx.beginPath(); ctx.arc(x, ey + 2.5, 4, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke(); return; }
+    if (e === 'dot') { ctx.fillStyle = ink; ctx.beginPath(); ctx.ellipse(x, ey + 0.5, 2, 2.4, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x - 0.6, ey - 0.4, 0.6, 0, 7); ctx.fill(); return; }
+    var big = e === 'kira', rx = big ? 4.4 : 4, ry = big ? 5.8 : 5.2;
+    if (e === 'jito') ry = 3.4;
+    var cy = e === 'jito' ? ey + 1.6 : ey;
+    // white
+    ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.ellipse(x, cy, rx, ry, 0, 0, 7); ctx.fill();
+    // iris
+    ctx.save(); ctx.beginPath(); ctx.ellipse(x, cy, rx, ry, 0, 0, 7); ctx.clip();
+    var ic = f.eyeColor || '#6B4226';
+    ctx.fillStyle = vgrad(cy - ry, cy + ry, shade(ic, -0.55), shade(ic, 0.2));
+    ctx.beginPath(); ctx.ellipse(x, cy + 0.6, rx - 0.6, ry - 0.2, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = shade(ic, -0.7); ctx.beginPath(); ctx.ellipse(x, cy + 0.8, 1.5, 2.3, 0, 0, 7); ctx.fill();
+    ctx.restore();
+    // highlights
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath(); ctx.ellipse(x - 1.4, cy - 1.9, 1.5, 1.8, -0.3, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + 1.5, cy + 2.3, 0.8, 0, 7); ctx.fill();
+    if (big) { ctx.beginPath(); ctx.moveTo(x + 1.6, cy - 3.2); ctx.lineTo(x + 2.1, cy - 2); ctx.lineTo(x + 3.2, cy - 1.6); ctx.lineTo(x + 2.1, cy - 1.2); ctx.lineTo(x + 1.6, cy); ctx.lineTo(x + 1.1, cy - 1.2); ctx.lineTo(x, cy - 1.6); ctx.lineTo(x + 1.1, cy - 2); ctx.closePath(); ctx.fill(); }
+    // upper lash line
+    ctx.strokeStyle = ink; ctx.lineWidth = 2.2; ctx.beginPath();
+    if (e === 'jito') { ctx.moveTo(x - rx - 0.6, cy - 0.6); ctx.lineTo(x + rx + 0.6, cy - 0.6); }
+    else ctx.ellipse(x, cy + 0.4, rx + 0.4, ry + 0.2, 0, Math.PI * 1.08, Math.PI * 1.92);
+    ctx.stroke();
+    ctx.lineWidth = 1.5; ctx.beginPath();
+    if (e === 'tare') { ctx.moveTo(x + s * (rx - 0.5), cy - 2.5); ctx.quadraticCurveTo(x + s * (rx + 2), cy - 0.5, x + s * (rx + 2.3), cy + 1.8); }
+    else if (e === 'tsuri') { ctx.moveTo(x + s * (rx - 0.5), cy - 3.5); ctx.lineTo(x + s * (rx + 2.6), cy - 5.8); }
+    else if (e === 'kira') { ctx.moveTo(x + s * (rx - 0.6), cy - 3.8); ctx.lineTo(x + s * (rx + 2.4), cy - 5.6); ctx.moveTo(x + s * (rx + 0.2), cy - 1.8); ctx.lineTo(x + s * (rx + 2.8), cy - 2.6); }
+    else if (e !== 'jito') { ctx.moveTo(x + s * (rx - 0.4), cy - 3.4); ctx.lineTo(x + s * (rx + 1.8), cy - 4.6); }
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+  }
+  function drawFace(X, hy, f, lx, blink, skinCol) {
+    var ey = hy + 4, ex = 8;
+    [-1, 1].forEach(function (s) {
+      var x = X + s * ex + lx, e = f.eye;
+      if (e === 'wink') e = s === 1 ? 'smile' : 'round';
+      if (blink && e !== 'smile' && e !== 'dot') e = '_blink';
+      // cheeks first, under everything
+      var cx = X + s * 13 + lx, cy = hy + 10.5;
+      if (f.cheek === 'pink') { var rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 5.5); rg.addColorStop(0, 'rgba(255,120,160,0.55)'); rg.addColorStop(1, 'rgba(255,120,160,0)'); ctx.fillStyle = rg; ctx.beginPath(); ctx.ellipse(cx, cy, 6, 3.8, 0, 0, 7); ctx.fill(); }
+      else if (f.cheek === 'freckle') { ctx.fillStyle = 'rgba(160,95,60,0.7)'; [[-2, 0], [1, -1.5], [2, 1.5]].forEach(function (d) { ctx.beginPath(); ctx.arc(cx + d[0], cy + d[1], 0.9, 0, 7); ctx.fill(); }); }
+      else if (f.cheek === 'heart') { ctx.fillStyle = '#FF7FA8'; ctx.beginPath(); ctx.moveTo(cx, cy + 2.5); ctx.bezierCurveTo(cx - 4, cy - 0.5, cx - 2, cy - 3.5, cx, cy - 1.2); ctx.bezierCurveTo(cx + 2, cy - 3.5, cx + 4, cy - 0.5, cx, cy + 2.5); ctx.fill(); }
+      drawEye(x, ey, e, s, f);
+      var by = hy - 5.5, b = f.brow, bc = shade(f.hairColor || '#4A3426', -0.25);
+      if (b !== 'none') {
+        ctx.strokeStyle = bc; ctx.fillStyle = bc; ctx.lineCap = 'round'; ctx.lineWidth = b === 'thick' ? 2.8 : 1.5; ctx.beginPath();
+        if (b === 'komari') { ctx.moveTo(x - s * 3.5, by - 2.2); ctx.lineTo(x + s * 3.5, by + 0.6); ctx.stroke(); }
+        else if (b === 'kiri') { ctx.moveTo(x - s * 3.5, by + 1); ctx.lineTo(x + s * 3.5, by - 2.2); ctx.stroke(); }
+        else if (b === 'short') { ctx.ellipse(x - s * 1.5, by - 1, 2, 1.3, 0, 0, 7); ctx.fill(); }
+        else { ctx.moveTo(x - 3.6, by); ctx.quadraticCurveTo(x, by - 2.2, x + 3.6, by); ctx.stroke(); }
+        ctx.lineCap = 'butt';
+      }
+    });
+    // nose
+    ctx.fillStyle = shade(skinCol, -0.22); ctx.beginPath(); ctx.ellipse(X + lx * 1.2, hy + 8.5, 1, 0.7, 0, 0, 7); ctx.fill();
+    // mouth
+    var mx = X + lx, my = hy + 12.5, m = f.mouth, ml = '#7A3445';
+    ctx.lineWidth = 1.4; ctx.strokeStyle = ml; ctx.lineCap = 'round'; ctx.beginPath();
+    if (m === 'open') { ctx.moveTo(mx - 3.8, my - 1.5); ctx.quadraticCurveTo(mx, my - 0.5, mx + 3.8, my - 1.5); ctx.quadraticCurveTo(mx + 3, my + 4.5, mx, my + 4.5); ctx.quadraticCurveTo(mx - 3, my + 4.5, mx - 3.8, my - 1.5); ctx.fillStyle = '#B83A58'; ctx.fill(); ctx.stroke(); ctx.fillStyle = '#FF8FA6'; ctx.beginPath(); ctx.ellipse(mx, my + 3, 2.2, 1.3, 0, 0, 7); ctx.fill(); }
+    else if (m === 'omega' || m === 'cat') { ctx.arc(mx - 2.2, my - 1, 2.2, 0.1, Math.PI - 0.1); ctx.moveTo(mx + 4.4, my - 1); ctx.arc(mx + 2.2, my - 1, 2.2, 0.1, Math.PI - 0.1); ctx.stroke(); if (m === 'cat') { ctx.fillStyle = ml; ctx.beginPath(); ctx.ellipse(mx, my - 3.4, 1.3, 0.9, 0, 0, 7); ctx.fill(); } }
+    else if (m === 'small') { ctx.moveTo(mx - 1.6, my); ctx.lineTo(mx + 1.6, my); ctx.stroke(); }
+    else if (m === 'pout') { ctx.arc(mx, my + 3, 3, Math.PI * 1.2, Math.PI * 1.8); ctx.stroke(); }
+    else if (m === 'tongue') { ctx.arc(mx, my - 1.5, 3.2, 0.15, Math.PI - 0.15); ctx.stroke(); ctx.beginPath(); ctx.ellipse(mx + 1.2, my + 1.7, 1.8, 2.2, 0, 0, 7); fillLine('#FF7F9A', '#FF7F9A', 1); }
+    else { ctx.arc(mx, my - 1.5, 3.2, 0.25, Math.PI - 0.25); ctx.stroke(); }
+    ctx.lineCap = 'butt';
+    // glasses
+    var g = f.glasses;
+    if (g && g !== 'none') {
+      ctx.lineWidth = 1.4; ctx.strokeStyle = g === 'sun' ? '#2B2547' : '#6A4FC4';
+      [-1, 1].forEach(function (s) {
+        var x = X + s * ex + lx; ctx.beginPath();
+        if (g === 'round') ctx.arc(x, ey, 5.8, 0, 7);
+        else rr(x - 6, ey - 4.6, 12, 9.2, g === 'sun' ? 3 : 1.5);
+        if (g === 'sun') { ctx.fillStyle = 'rgba(43,37,71,0.88)'; ctx.fill(); }
+        else { ctx.fillStyle = 'rgba(200,220,255,0.18)'; ctx.fill(); }
+        ctx.stroke();
+        if (g === 'sun') { ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x - 3, ey - 2); ctx.lineTo(x - 1, ey - 3.2); ctx.stroke(); ctx.strokeStyle = '#2B2547'; ctx.lineWidth = 1.4; }
+      });
+      ctx.beginPath(); ctx.moveTo(X - 2.2 + lx, ey - 1); ctx.quadraticCurveTo(X + lx, ey - 2.4, X + 2.2 + lx, ey - 1); ctx.stroke();
+    }
+  }
+  // outfit details per skin
+  function drawOutfit(X, top, w, h, sk, front) {
+    var st = sk.style || 'plain', c = sk.body;
+    if (!front) { if (st === 'hoodie') { ctx.beginPath(); ctx.ellipse(X, top + 4, 9, 5, 0, 0, 7); fillLine(shade(c, -0.08), c); } return; }
+    ctx.lineCap = 'round';
+    if (st === 'uniform') {
+      ctx.beginPath(); ctx.moveTo(X - 7, top); ctx.lineTo(X, top + 7); ctx.lineTo(X + 7, top); ctx.lineTo(X + 4, top); ctx.lineTo(X, top + 4); ctx.lineTo(X - 4, top); ctx.closePath(); fillLine('#FFFFFF', '#B0A8C0', 1);
+      ctx.beginPath(); ctx.moveTo(X, top + 6); ctx.lineTo(X - 4, top + 3.5); ctx.lineTo(X - 4, top + 9); ctx.closePath(); ctx.moveTo(X, top + 6); ctx.lineTo(X + 4, top + 3.5); ctx.lineTo(X + 4, top + 9); ctx.closePath(); fillLine('#F0675A', '#F0675A', 1);
+    } else if (st === 'hoodie') {
+      ctx.beginPath(); ctx.ellipse(X, top + 1, 8, 3, 0, 0, Math.PI); fillLine(shade(c, -0.1), c, 1);
+      ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(X - 3, top + 2); ctx.lineTo(X - 3, top + 8); ctx.moveTo(X + 3, top + 2); ctx.lineTo(X + 3, top + 8); ctx.stroke();
+      ctx.beginPath(); rr(X - 6, top + h - 7, 12, 5, 2); fillLine(shade(c, -0.08), c, 1);
+    } else if (st === 'cardigan') {
+      ctx.beginPath(); ctx.moveTo(X - 4, top); ctx.lineTo(X, top + 6); ctx.lineTo(X + 4, top); ctx.closePath(); fillLine('#FFFFFF', '#B0A8C0', 1);
+      ctx.strokeStyle = line(c); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X, top + 6); ctx.lineTo(X, top + h - 1); ctx.stroke();
+      ctx.fillStyle = '#FFF4D6'; [9, 13].forEach(function (d) { ctx.beginPath(); ctx.arc(X + 1.8, top + d, 1, 0, 7); ctx.fill(); });
+    } else if (st === 'pajama') {
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; [[-5, 6], [4, 10], [-3, 13], [6, 4]].forEach(function (d) { ctx.beginPath(); ctx.arc(X + d[0], top + d[1], 1.2, 0, 7); ctx.fill(); });
+      ctx.beginPath(); ctx.moveTo(X - 6, top); ctx.lineTo(X, top + 4); ctx.lineTo(X + 6, top); fillLine(shade(c, 0.3), c, 1);
+    } else if (st === 'jersey') {
+      ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(X - w / 2 + 2, top + 4); ctx.lineTo(X - w / 2 + 2, top + h - 2); ctx.moveTo(X + w / 2 - 2, top + 4); ctx.lineTo(X + w / 2 - 2, top + h - 2); ctx.stroke();
+      ctx.strokeStyle = line(c); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X, top + 1); ctx.lineTo(X, top + h - 1); ctx.stroke();
+      ctx.fillStyle = '#E3E3E3'; ctx.beginPath(); ctx.arc(X, top + 4, 1.2, 0, 7); ctx.fill();
+    } else if (st === 'robe') {
+      ctx.beginPath(); ctx.moveTo(X - 10, top); ctx.lineTo(X, top + 7); ctx.lineTo(X + 10, top); ctx.lineTo(X + 7, top - 2); ctx.lineTo(X, top + 3); ctx.lineTo(X - 7, top - 2); ctx.closePath(); fillLine('#2F5E4A', '#2F5E4A', 1);
+      ctx.beginPath(); ctx.arc(X, top + 7, 2.2, 0, 7); fillLine('#FFC94D', '#C98A00', 1);
+    } else if (st === 'idol') {
+      ctx.beginPath(); for (var i = 0; i < 5; i++) ctx.arc(X - 8 + i * 4, top + h - 1, 2.4, 0, Math.PI); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(X, top + 5); ctx.lineTo(X - 4, top + 2); ctx.lineTo(X - 4, top + 8); ctx.closePath(); ctx.moveTo(X, top + 5); ctx.lineTo(X + 4, top + 2); ctx.lineTo(X + 4, top + 8); ctx.closePath(); fillLine('#FF5C93', '#FF5C93', 1);
+    }
+    ctx.lineCap = 'butt';
+  }
+
+  function drawPerson(a, t) {
+    var f = a.face || DEFAULT_FACE, sk = a.skin;
+    var seated = !!a.seat;
+    var foot = P(a.px, a.py, seated ? 12 : 0);
+    var moving = a.path.length > 0;
+    var bob = moving && !reduceMotion ? Math.abs(Math.sin(a.walk)) * 3 : 0;
+    var breathe = !moving && !reduceMotion ? Math.sin(t * 2 + a.px) * 0.7 : 0;
+    var X = foot[0], base = foot[1] - bob;
+    var front = a.fx + a.fy >= 0;
+    var look = Math.sign(a.fx - a.fy) || 0, lx = look * 3;
+    var skinCol = f.skinColor || SKIN_TONES[f.skinTone] || SKIN_TONES[0];
+    var hy = base - 45 + breathe;
+    var pants = sk.style === 'idol' ? '#FFFFFF' : shade(sk.body, -0.45);
+    if (!seated) {
+      var sh = P(a.px, a.py);
+      ctx.fillStyle = 'rgba(58,46,63,0.16)'; ctx.beginPath(); ctx.ellipse(sh[0], sh[1], 14, 6, 0, 0, 7); ctx.fill();
+      var swing = moving ? Math.sin(a.walk) * 3 : 0;
+      [[-7, swing], [1.5, -swing]].forEach(function (L) {
+        ctx.beginPath(); rr(X + L[0], base - 9 + L[1], 5.5, 7, 2.5); fillLine(sk.style === 'idol' ? skinCol : pants, sk.style === 'idol' ? skinCol : pants, 1);
+        ctx.beginPath(); ctx.ellipse(X + L[0] + 2.75, base - 1.5 + L[1], 4, 2.4, 0, 0, 7); fillLine(sk.shoe || '#7A5A48', sk.shoe || '#7A5A48', 1);
+      });
+    }
+    if (front) hairBack(X, hy, f);
+    // torso
+    var top = base - 25 + breathe, w = 20, h = 18;
+    ctx.beginPath();
+    ctx.moveTo(X - 8, top); ctx.quadraticCurveTo(X - 11, top + 1, X - 11.5, top + 6); ctx.lineTo(X - 12, top + h - 3); ctx.quadraticCurveTo(X - 12, top + h, X - 8, top + h);
+    ctx.lineTo(X + 8, top + h); ctx.quadraticCurveTo(X + 12, top + h, X + 12, top + h - 3); ctx.lineTo(X + 11.5, top + 6); ctx.quadraticCurveTo(X + 11, top + 1, X + 8, top); ctx.closePath();
+    fillLine(vgrad(top, top + h, shade(sk.body, 0.12), shade(sk.body, -0.08)), sk.body);
+    drawOutfit(X, top, w, h, sk, front);
+    // arms + hands
+    var armY = base - 19 + breathe;
+    [-1, 1].forEach(function (s) {
+      ctx.beginPath();
+      if (seated) { ctx.ellipse(X + s * 9 + lx, armY + 3, 4, 5.5, s * 0.5, 0, 7); }
+      else { ctx.ellipse(X + s * 12.5, armY + 1, 3.8, 6.5, s * -0.25, 0, 7); }
+      fillLine(shade(sk.body, -0.04), sk.body, 1.1);
+      ctx.beginPath();
+      if (seated) ctx.arc(X + s * 6 + lx, armY + 7, 2.8, 0, 7); else ctx.arc(X + s * 13.5, armY + 7, 2.8, 0, 7);
+      fillLine(skinCol, skinCol, 1);
+    });
+    if (!front) hairBack(X, hy, f);
+    // neck shadow + ears + head
+    ctx.fillStyle = shade(skinCol, -0.15); ctx.beginPath(); ctx.ellipse(X, top + 0.5, 5, 2.2, 0, 0, 7); ctx.fill();
+    [-1, 1].forEach(function (s) { ctx.beginPath(); ctx.ellipse(X + s * 20.5, hy + 4, 3.4, 4.6, 0, 0, 7); fillLine(skinCol, skinCol, 1.1); });
+    ctx.beginPath(); ctx.ellipse(X, hy, 21, 19.5, 0, 0, 7);
+    var fg = ctx.createRadialGradient(X - 6, hy - 5, 2, X, hy + 2, 23); fg.addColorStop(0, shade(skinCol, 0.35)); fg.addColorStop(0.65, skinCol); fg.addColorStop(1, shade(skinCol, -0.1));
+    fillLine(fg, skinCol, 1.3);
+    if (front) {
+      ctx.fillStyle = 'rgba(120,60,60,0.12)'; ctx.beginPath(); ctx.ellipse(X + lx * 0.5, hy - 6, 18, 5, 0, 0, 7); ctx.fill();
+      var blink = !reduceMotion && (t + a.px * 3) % 4 < 0.12;
+      drawFace(X, hy, f, lx, blink, skinCol);
+    }
+    hairFront(X, hy, f, front, lx);
+    var acc = sk.acc;
+    if (acc === 'band') {
+      ctx.beginPath(); rr(X - 22, hy - 14, 44, 7, 3.5); fillLine('#FFFFFF', '#C8C0D0', 1.2);
+      if (front) { ctx.fillStyle = '#F0675A'; ctx.beginPath(); ctx.arc(X + lx, hy - 10.5, 3, 0, 7); ctx.fill(); }
+      else { ctx.beginPath(); ctx.moveTo(X, hy - 10); ctx.lineTo(X - 5, hy + 2); ctx.lineTo(X - 1, hy + 2); ctx.closePath(); ctx.moveTo(X, hy - 10); ctx.lineTo(X + 5, hy + 1); ctx.lineTo(X + 1, hy + 1); ctx.closePath(); fillLine('#FFFFFF', '#C8C0D0', 1); }
+    } else if (acc === 'hat') {
+      ctx.beginPath(); ctx.ellipse(X, hy - 17, 28, 6.5, 0, 0, 7); fillLine('#2F5E4A', '#2F5E4A');
+      ctx.beginPath(); ctx.moveTo(X - 16, hy - 18); ctx.quadraticCurveTo(X - 2, hy - 30, X + 2, hy - 46); ctx.quadraticCurveTo(X + 8, hy - 54, X + 18, hy - 50); ctx.quadraticCurveTo(X + 10, hy - 44, X + 16, hy - 18); ctx.closePath();
+      fillLine(vgrad(hy - 54, hy - 18, '#3E7A60', '#2F5E4A'), '#2F5E4A');
+      ctx.beginPath(); rr(X - 15, hy - 24, 30, 5, 2); fillLine('#8E6FD8', '#8E6FD8', 1);
+      ctx.fillStyle = '#FFC94D'; ctx.beginPath(); for (var i = 0; i < 10; i++) { var an = i * Math.PI / 5 - Math.PI / 2, rad = i % 2 ? 1.6 : 3.6; ctx.lineTo(X + 4 + Math.cos(an) * rad, hy - 34 + Math.sin(an) * rad); } ctx.closePath(); ctx.fill();
+    } else if (acc === 'ribbon') {
+      var rx = X + 13, ry = hy - 19;
+      ctx.beginPath(); ctx.moveTo(rx, ry); ctx.quadraticCurveTo(rx - 6, ry - 11, rx - 12, ry - 5); ctx.quadraticCurveTo(rx - 8, ry, rx - 11, ry + 6); ctx.closePath();
+      ctx.moveTo(rx, ry); ctx.quadraticCurveTo(rx + 6, ry - 11, rx + 12, ry - 5); ctx.quadraticCurveTo(rx + 8, ry, rx + 11, ry + 6); ctx.closePath();
+      fillLine(vgrad(ry - 10, ry + 6, '#FF8FB4', '#FF4F86'), '#FF5C93');
+      ctx.beginPath(); ctx.arc(rx, ry, 3, 0, 7); fillLine('#FF5C93', '#FF5C93');
+    } else if (acc === 'cap') {
+      ctx.beginPath(); ctx.moveTo(X - 21, hy - 8); ctx.quadraticCurveTo(X - 18, hy - 30, X + 4, hy - 26); ctx.quadraticCurveTo(X + 20, hy - 24, X + 24, hy - 32); ctx.quadraticCurveTo(X + 24, hy - 12, X + 21, hy - 8); ctx.quadraticCurveTo(X, hy - 13, X - 21, hy - 8); ctx.closePath();
+      fillLine(vgrad(hy - 32, hy - 8, '#FFEFB0', '#FFD86A'), '#FFC94D');
+      ctx.beginPath(); ctx.arc(X + 25, hy - 32, 4.5, 0, 7); fillLine('#FFFFFF', '#C8C0D0', 1);
+      ctx.fillStyle = 'rgba(255,255,255,0.8)'; [[-8, -18], [6, -20], [14, -14]].forEach(function (d) { ctx.beginPath(); ctx.arc(X + d[0], hy + d[1], 1.4, 0, 7); ctx.fill(); });
+    }
+    a._head = [X, hy];
+  }
+  function drawPreview(cv, skin, face, headOnly) {
+    var old = ctx; ctx = cv.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+    var k = headOnly ? cv.width / 60 : cv.width / 84;
+    if (headOnly) ctx.setTransform(k, 0, 0, k, 30 * k, (30 + 45) * k + (face && face.hair === 'long' ? -4 * k : 0));
+    else ctx.setTransform(k, 0, 0, k, 42 * k, 96 * k);
+    drawPerson({ skin: skin, face: face || DEFAULT_FACE, px: 0, py: 0, fx: 0.5, fy: 0.5, path: [], seat: null, walk: 0 }, 1.5);
+    ctx = old;
+  }
+  function drawOverlay(a) {
+    if (!a._head) return;
+    var X = a._head[0], hy = a._head[1];
+    var near = a.me || dist(a, me) < NEAR_R;
+    // name tag
+    ctx.font = '800 11px "M PLUS Rounded 1c", sans-serif';
+    var nm = a.name, nw = ctx.measureText(nm).width + 14;
+    var ny = a.seat ? hy - 36 : hy + 52;
+    if (a.seat) ny = hy - 34;
+    if (!a.seat || near) {
+      rr(X - nw / 2, ny, nw, 17, 8.5);
+      ctx.fillStyle = a.me ? '#FF7FA8' : (near ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.6)'); ctx.fill();
+      ctx.fillStyle = a.me ? '#fff' : (near ? '#3A2E3F' : '#6E6276'); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(nm, X, ny + 9);
+    }
+    // bubble
+    var msg = a.tempMsg && now < a.tempUntil ? a.tempMsg : a.msg;
+    if (msg) {
+      ctx.font = '700 12px "M PLUS Rounded 1c", sans-serif';
+      var bw = ctx.measureText(msg).width + 20, by = (a.seat ? ny : hy - 24) - 34;
+      rr(X - bw / 2, by, bw, 26, 13); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#3A2E3F'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X - 5, by + 25); ctx.lineTo(X, by + 32); ctx.lineTo(X + 5, by + 25); ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(X - 5, by + 26); ctx.lineTo(X, by + 32); ctx.lineTo(X + 5, by + 26); ctx.stroke();
+      ctx.fillStyle = '#3A2E3F'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(msg, X, by + 13.5);
+    }
+  }
+  function dist(a, b) { return Math.hypot(a.px - b.px, a.py - b.py); }
+
+  // ---------- pathfinding ----------
+  function free(x, y, goal, who) {
+    if (x < 0 || y < 0 || x >= W || y >= H) return false;
+    var k = x + ',' + y;
+    if (blocked[k]) return false;
+    if (chairAt[k] && k !== goal) return false;
+    return true;
+  }
+  function bfs(sx, sy, gx, gy) {
+    var goal = gx + ',' + gy, start = sx + ',' + sy, prev = {}, q = [[sx, sy]];
+    prev[start] = null;
+    while (q.length) {
+      var c = q.shift(), ck = c[0] + ',' + c[1];
+      if (ck === goal) {
+        var out = [], k = ck;
+        while (k !== start) { var p = k.split(',').map(Number); out.unshift([p[0] + 0.5, p[1] + 0.5]); k = prev[k]; }
+        return out;
+      }
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) {
+        var nx = c[0] + d[0], ny = c[1] + d[1], nk = nx + ',' + ny;
+        if (nk in prev) return;
+        if (!free(nx, ny, goal)) return;
+        prev[nk] = ck; q.push([nx, ny]);
+      });
+    }
+    return null;
+  }
+  function standUp(a) {
+    if (!a.seat) return;
+    a.seat.who = null; a.seat = null; a.py -= 1; a.fy = -1; a.fx = 0;
+    if (a.me) { updateHud(); }
+  }
+  function goTo(a, gx, gy, onArrive) {
+    if (a.seat) standUp(a);
+    var path = bfs(Math.floor(a.px), Math.floor(a.py), gx, gy);
+    if (!path) return false;
+    var cx = Math.floor(a.px) + 0.5, cy = Math.floor(a.py) + 0.5;
+    if (Math.abs(a.px - cx) > 0.01 || Math.abs(a.py - cy) > 0.01) path.unshift([cx, cy]);
+    a.path = path; a.onArrive = onArrive || null;
+    return true;
+  }
+  function sitAt(a, s) { s.who = a; a.seat = s; a.px = s.x + 0.5; a.py = s.y + 0.5; a.fx = 0; a.fy = 1; a.path = []; }
+
+  // ---------- state ----------
+  var st = { mode: 'region', sec: 0, tickets: 2, gems: 300, earnedAt: -999, tab: 'home', owned: [0, 1], equipped: 0 };
+  var particles = [], now = 0;
+  function loadRoom(mode) {
+    st.mode = mode;
+    people.forEach(function (p) { if (p.seat) p.seat.who = null; });
+    people = [me];
+    if (me.seat) me.seat.who = me;
+    var cfg = MODES[mode];
+    cfg.seated.forEach(function (o) {
+      var s = seats[o.s];
+      if (s.who) s = seats.filter(function (q) { return !q.who; })[0];
+      var p = makePerson({ name: o.n, k: o.k, x: s.x, y: s.y, msg: o.m, seed: o.s * 7 });
+      sitAt(p, s); people.push(p);
+    });
+    cfg.walkers.forEach(function (o, i) {
+      var p = makePerson({ name: o.n, k: o.k, x: i ? 10 : 1, y: i ? 8 : 5, wander: true, lines: o.lines, seed: 40 + i * 9 });
+      p.idleUntil = 1 + i * 2; people.push(p);
+    });
+    document.querySelectorAll('.rooms button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.room === mode)); });
+  }
+
+  // ---------- HUD ----------
+  var toastTimer;
+  function toast(t) { var el = document.getElementById('toast'); el.textContent = t; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.hidden = true; }, 2200); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function hms(s) { s = Math.floor(s); return Math.floor(s / 3600) + ':' + pad(Math.floor(s % 3600 / 60)) + ':' + pad(s % 60); }
+  function updateHud() {
+    document.getElementById('clock').textContent = hms(st.sec);
+    var prog = st.sec % TICKET_SEC, left = Math.ceil(TICKET_SEC - prog);
+    document.getElementById('prog').style.width = (prog / TICKET_SEC * 100) + '%';
+    document.getElementById('next').textContent = st.sec - st.earnedAt < 6 ? 'チケットを1枚ゲット！' : '次のチケットまで ' + pad(Math.floor(left / 60)) + ':' + pad(left % 60);
+    document.getElementById('tickets').textContent = st.tickets;
+    document.getElementById('gems').textContent = st.gems;
+    var on = !!me.seat, el = document.getElementById('state');
+    el.textContent = on ? '着席中・タイマー作動中' : '光っているイスに座ろう';
+    el.className = 'state' + (on ? ' on' : '');
+    document.getElementById('standBtn').hidden = !on;
+  }
+  function addStudy(n) {
+    var before = Math.floor(st.sec / TICKET_SEC);
+    st.sec += n;
+    if (Math.floor(st.sec / TICKET_SEC) > before) { st.tickets += Math.floor(st.sec / TICKET_SEC) - before; st.earnedAt = st.sec; toast('きせかえチケットを1枚ゲット！'); }
+    updateHud();
+  }
+  document.getElementById('skipBtn').addEventListener('click', function () { if (!me.seat) { toast('座っている間だけ勉強時間になります'); return; } addStudy(TICKET_SEC); });
+  document.getElementById('standBtn').addEventListener('click', function () { standUp(me); });
+  var presetsEl = document.getElementById('presets');
+  PRESETS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.addEventListener('click', function () { me.msg = t; }); presetsEl.appendChild(b); });
+  document.getElementById('say').addEventListener('submit', function (e) { e.preventDefault(); var i = document.getElementById('chatIn'), t = i.value.trim(); if (!t) return; t = t.replace(/\d[\d-]{8,}\d/g, '＊＊＊').replace(/@[A-Za-z0-9_.]+/g, '＊＊＊'); me.msg = t; i.value = ''; });
+  document.getElementById('say').addEventListener('submit', function (e) { e.preventDefault(); });
+  document.querySelectorAll('.rooms button').forEach(function (b) {
+    b.addEventListener('click', function () { if (st.mode !== b.dataset.room) { loadRoom(b.dataset.room); toast(MODES[b.dataset.room].title + 'に入りました'); } });
+  });
+
+  // ---------- area map (jintori) + one-tap survey ----------
+  var AREAS = [
+    { n: '喜多方市', c: 2, r: 0, h: 214, p: 41, top: '21時台', why: '遠い' },
+    { n: '北塩原村', c: 3, r: 0, h: 0, p: 3 },
+    { n: '西会津町', c: 0, r: 1, h: 38, p: 7, top: '20時台', why: 'バスがない' },
+    { n: '会津坂下町', c: 1, r: 1, h: 86, p: 18, top: '21時台', why: 'バスがない' },
+    { n: '湯川村', c: 2, r: 1, h: 0, p: 2 },
+    { n: '磐梯町', c: 3, r: 1, h: 0, p: 4 },
+    { n: '猪苗代町', c: 4, r: 1, h: 72, p: 15, top: '22時台', why: '遠い' },
+    { n: '三島町', c: 0, r: 2, h: 0, p: 1 },
+    { n: '柳津町', c: 1, r: 2, h: 31, p: 6, top: '21時台', why: 'バスがない' },
+    { n: '会津美里町', c: 2, r: 2, h: 97, p: 22, top: '20時台', why: '閉館後' },
+    { n: '会津若松市', c: 3, r: 2, h: 468, p: 103, top: '21時台', why: '閉館後' },
+    { n: '只見町', c: 0, r: 3, h: 26, p: 5, top: '19時台', why: '雪' },
+    { n: '金山町', c: 1, r: 3, h: 0, p: 2 },
+    { n: '昭和村', c: 2, r: 3, h: 0, p: 1 },
+    { n: '下郷町', c: 3, r: 3, h: 44, p: 9, top: '21時台', why: '雪' },
+    { n: '檜枝岐村', c: 1, r: 4, h: 0, p: 1 },
+    { n: '南会津町', c: 2, r: 4, h: 63, p: 12, top: '20時台', why: '閉館後', me: true }
+  ];
+  var jinSel = 16;
+  function areaHours(a) { return a.me ? a.h + Math.floor(st.sec / 3600 * 10) / 10 : a.h; }
+  function tileColor(a) {
+    if (a.p < 5) return '#E6DCEB';
+    var t = Math.min(1, Math.sqrt(areaHours(a) / 480));
+    var c0 = [191, 233, 218], c1 = [30, 156, 126];
+    return 'rgb(' + c0.map(function (v, i) { return Math.round(v + (c1[i] - v) * t); }).join(',') + ')';
+  }
+  function renderJin() {
+    var svgEl = document.getElementById('jinMap'), NS = 'http://www.w3.org/2000/svg', html = '';
+    AREAS.forEach(function (a, i) {
+      var x = 4 + a.c * 64 + (a.r % 2 ? 0 : 0), y = 4 + a.r * 52, dark = a.p >= 5 && areaHours(a) > 150;
+      html += '<g class="tile" tabindex="0" role="button" data-i="' + i + '" aria-label="' + a.n + '">' +
+        '<rect x="' + x + '" y="' + y + '" width="60" height="48" rx="10" fill="' + tileColor(a) + '" stroke="' + (i === jinSel ? '#FF7FA8' : (a.me ? '#3A2E3F' : '#fff')) + '" stroke-width="' + (i === jinSel || a.me ? 3 : 2) + '"></rect>' +
+        '<text x="' + (x + 30) + '" y="' + (y + 22) + '" text-anchor="middle" font-size="' + (a.n.length > 4 ? 10 : 11) + '" font-weight="800" fill="' + (dark ? '#fff' : '#3A2E3F') + '">' + a.n + '</text>' +
+        '<text x="' + (x + 30) + '" y="' + (y + 38) + '" text-anchor="middle" font-size="10" fill="' + (dark ? '#fff' : '#6E6276') + '">' + (a.p < 5 ? '−' : Math.round(areaHours(a)) + '時間') + '</text></g>';
+    });
+    svgEl.innerHTML = html;
+    svgEl.querySelectorAll('.tile').forEach(function (g) {
+      var pick = function () { jinSel = +g.dataset.i; renderJin(); };
+      g.addEventListener('click', pick);
+      g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    });
+    var a = AREAS[jinSel];
+    document.getElementById('jinInfo').innerHTML = a.p < 5
+      ? '<b>' + a.n + '</b><br>参加者が5人未満なので、数字は出していません。'
+      : '<b>' + a.n + (a.me ? '（あなたの町）' : '') + '</b><br>今週 ' + areaHours(a).toFixed(a.me ? 1 : 0).replace('.0', '') + '時間 ・ 参加 ' + a.p + '人<br>いちばん多い時間: ' + a.top + ' ・ 家で勉強する理由1位: ' + a.why +
+        (a.me && st.sec > 0 ? '<br>あなたは今日 +' + (Math.floor(st.sec / 360) / 10) + '時間 ぬりました' : '');
+  }
+  var QUESTIONS = [
+    { t: '今日はなぜ家で勉強？', o: ['雪・天気', 'バスがない', '遠い', '施設が閉まってる', '家のほうが楽', 'その他'] },
+    { t: 'ふだん図書館まで、何で何分？', o: ['徒歩・自転車 〜15分', 'バス 15〜30分', 'バス 30分以上', '家族の送迎', '行ったことがない', 'その他'] },
+    { t: '開いていたら行きたい場所は？', o: ['近くの公民館', '学校の教室', '図書館（夜まで）', '駅やバス停の近く', '行かない', 'その他'] }
+  ];
+  var qAsked = 0;
+  function askSurvey() {
+    if (qAsked >= QUESTIONS.length) return;
+    var q = QUESTIONS[qAsked], box = document.getElementById('qBox'), opts = document.getElementById('qOpts');
+    document.getElementById('qT').textContent = q.t;
+    opts.innerHTML = '';
+    q.o.forEach(function (o) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = o;
+      b.addEventListener('click', function () { box.hidden = true; qAsked++; st.tickets += 1; updateHud(); toast('回答ありがとう！チケット+1'); });
+      opts.appendChild(b);
+    });
+    box.hidden = false;
+  }
+  document.getElementById('qSkip').addEventListener('click', function () { document.getElementById('qBox').hidden = true; qAsked = QUESTIONS.length; });
+
+  // ---------- input ----------
+  function toWorld(cx, cy) { return [(cx - vw / 2) / scale + camX, (cy - anchorY()) / scale + camY]; }
+  function sendCheer(p) {
+    for (var i = 0; i < 10; i++) particles.push({ x: p._head[0] + (Math.random() - 0.5) * 30, y: p._head[1] - 10, vx: (Math.random() - 0.5) * 40, vy: -40 - Math.random() * 50, life: 1.4, c: i % 2 ? '#FFC94D' : '#FF7FA8' });
+    p.tempMsg = 'ありがとう！'; p.tempUntil = now + 2.2;
+    toast(p.name + 'さんに「がんばれ」を送りました');
+  }
+  var actP = null;
+  function openAct(p) { actP = p; document.getElementById('actName').textContent = p.name + 'さん'; document.getElementById('act').hidden = false; }
+  function closeAct() { actP = null; document.getElementById('act').hidden = true; }
+  document.getElementById('actClose').addEventListener('click', closeAct);
+  document.getElementById('actCheer').addEventListener('click', function () { var p = actP; closeAct(); if (p) sendCheer(p); });
+  document.getElementById('actBlock').addEventListener('click', function () {
+    var p = actP; closeAct(); if (!p) return;
+    if (p.seat) p.seat.who = null;
+    people = people.filter(function (q) { return q !== p; });
+    toast(p.name + 'さんをブロックしました。おたがいに見えなくなります');
+  });
+  document.getElementById('actReport').addEventListener('click', function () { var p = actP; closeAct(); if (p) toast('通報しました。運営が内容を確認します'); });
+  canvas.addEventListener('pointerup', function (e) {
+    if (actP) { closeAct(); return; }
+    var r = canvas.getBoundingClientRect(), w = toWorld(e.clientX - r.left, e.clientY - r.top);
+    // 1) tap on someone → cheer
+    for (var i = people.length - 1; i >= 0; i--) {
+      var p = people[i];
+      if (p.me || !p._head) continue;
+      if (Math.abs(w[0] - p._head[0]) < 20 && w[1] > p._head[1] - 22 && w[1] < p._head[1] + 30) { openAct(p); return; }
+    }
+    // 2) tap on a chair (or the desk in front of it)
+    var best = null, bd = 1e9;
+    seats.forEach(function (s) { var c = P(s.x + 0.5, s.y + 0.5, 16), d = Math.hypot(w[0] - c[0], (w[1] - c[1]) * 1.4); if (d < 30 && d < bd) { bd = d; best = s; } });
+    var tx = Math.floor((w[0] / (TW / 2) + w[1] / (TH / 2)) / 2), ty = Math.floor((w[1] / (TH / 2) - w[0] / (TW / 2)) / 2);
+    if (!best && chairAt[tx + ',' + (ty - 1)] && blocked[tx + ',' + ty]) best = chairAt[tx + ',' + (ty - 1)];
+    if (best) {
+      if (best.who === me) return;
+      if (best.who) { toast('この席は使用中です'); return; }
+      var target = best;
+      if (!goTo(me, best.x, best.y, function () { if (target.who) { toast('先に座られちゃいました'); return; } sitAt(me, target); updateHud(); toast('着席しました。タイマーが動きはじめます'); setTimeout(askSurvey, 900); })) toast('そこへは行けません');
+      return;
+    }
+    // 3) tap on floor → walk
+    if (tx >= 0 && ty >= 0 && tx < W && ty < H && free(tx, ty, '')) goTo(me, tx, ty);
+  });
+  var keys = {};
+  window.addEventListener('keydown', function (e) {
+    if (e.target && e.target.tagName === 'INPUT') return;
+    var k = e.key.toLowerCase(), d = { w: [0, -1], arrowup: [0, -1], s: [0, 1], arrowdown: [0, 1], a: [-1, 0], arrowleft: [-1, 0], d: [1, 0], arrowright: [1, 0] }[k];
+    if (!d) return;
+    e.preventDefault();
+    if (me.path.length > 1) return;
+    var bx = me.path.length ? Math.floor(me.path[0][0]) : Math.floor(me.px), by = me.path.length ? Math.floor(me.path[0][1]) : Math.floor(me.py);
+    if (me.seat) { standUp(me); return; }
+    if (free(bx + d[0], by + d[1], '')) { me.path.push([bx + d[0] + 0.5, by + d[1] + 0.5]); me.onArrive = null; }
+    else { me.fx = d[0]; me.fy = d[1]; }
+  });
+
+  // ---------- loop ----------
+  var last = performance.now(), secAcc = 0;
+  function update(dt) {
+    people.forEach(function (a) {
+      if (a.path.length) {
+        var wp = a.path[0], dx = wp[0] - a.px, dy = wp[1] - a.py, d = Math.hypot(dx, dy);
+        var step = a.speed * dt;
+        if (d <= step) { a.px = wp[0]; a.py = wp[1]; a.path.shift(); if (!a.path.length && a.onArrive) { var cb = a.onArrive; a.onArrive = null; cb(); } }
+        else { a.px += dx / d * step; a.py += dy / d * step; }
+        if (d > 0.001) { a.fx = Math.sign(Math.round(dx * 100)); a.fy = Math.sign(Math.round(dy * 100)); }
+        a.walk += dt * 14;
+      } else if (a.wander && now > a.idleUntil) {
+        var tries = 0, ok = false;
+        while (!ok && tries++ < 20) {
+          var gx = Math.floor(Math.random() * W), gy = Math.floor(Math.random() * H);
+          if (free(gx, gy, '') && !(gx === Math.floor(a.px) && gy === Math.floor(a.py))) ok = goTo(a, gx, gy);
+        }
+        a.idleUntil = now + 3 + Math.random() * 4;
+        if (Math.random() < 0.5 && a.lines.length) { a.tempMsg = a.lines[Math.floor(Math.random() * a.lines.length)]; a.tempUntil = now + 3; }
+      }
+    });
+    if (me.seat) { secAcc += dt; if (secAcc >= 1) { secAcc -= 1; addStudy(1); } }
+    particles.forEach(function (p) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 30 * dt; p.life -= dt; });
+    particles = particles.filter(function (p) { return p.life > 0; });
+    var nearN = people.filter(function (p) { return !p.me && dist(p, me) < NEAR_R; }).length;
+    var nEl = document.getElementById('near'); if (nEl.textContent !== String(nearN)) nEl.textContent = nearN;
+    // camera follows me, clamped to the room
+    var mp = P(me.px, me.py), tx = mp[0], ty = mp[1] - 30;
+    var halfW = vw / 2 / scale, minX = -H * TW / 2 + halfW - 40, maxX = W * TW / 2 - halfW + 40;
+    tx = minX > maxX ? (W - H) * TW / 4 : Math.max(minX, Math.min(maxX, tx));
+    if (fits()) { tx = (W - H) * TW / 4; ty = ((W + H) * TH / 2 - WALLH) / 2 + 8; }
+    var k = reduceMotion ? 1 : Math.min(1, dt * 5);
+    camX += (tx - camX) * k; camY += (ty - camY) * k;
+  }
+  function star(x, y, r, c) {
+    ctx.fillStyle = c; ctx.beginPath();
+    for (var i = 0; i < 10; i++) { var a = i * Math.PI / 5 - Math.PI / 2, rad = i % 2 ? r * 0.45 : r; ctx.lineTo(x + Math.cos(a) * rad, y + Math.sin(a) * rad); }
+    ctx.closePath(); ctx.fill();
+  }
+  function render(t) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#A9D8E6'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * (vw / 2 - camX * scale), dpr * (anchorY() - camY * scale));
+    drawRoom(t);
+    var list = [];
+    props.forEach(function (p) { list.push({ d: p.x + p.y + 1 + (p.kind === 'shelf' || p.kind === 'board' ? -0.5 : 0), f: function () { drawProp(p); } }); });
+    seats.forEach(function (s) { list.push({ d: s.x + s.y + 0.9, f: function () { drawChair(s); } }); });
+    people.forEach(function (a) { list.push({ d: a.px + a.py + (a.seat ? 0.05 : 0), f: function () { drawPerson(a, t); } }); });
+    list.sort(function (a, b) { return a.d - b.d; });
+    list.forEach(function (o) { o.f(); });
+    seats.forEach(function (s) {
+      if (s.who) return;
+      var c = P(s.x + 0.5, s.y + 0.5, 44 + (reduceMotion ? 0 : Math.sin(t * 4 + s.idx) * 3));
+      ctx.fillStyle = '#46C2A6'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(c[0] - 7, c[1] - 9); ctx.lineTo(c[0] + 7, c[1] - 9); ctx.lineTo(c[0], c[1]); ctx.closePath(); ctx.stroke(); ctx.fill();
+    });
+    people.forEach(drawOverlay);
+    particles.forEach(function (p) { ctx.globalAlpha = Math.max(0, Math.min(1, p.life)); star(p.x, p.y, 6, p.c); });
+    ctx.globalAlpha = 1;
+  }
+  function frame(ts) {
+    var dt = Math.min(0.05, (ts - last) / 1000); last = ts; now += dt;
+    update(dt); if (st.tab === 'room') render(now);
+    requestAnimationFrame(frame);
+  }
+  // ---------- app shell: tabs, home, gacha, closet ----------
+  var LOCKED = { body: '#E6DCEB', hair: '#CFC3D8' };
+  function showTab(tab) {
+    st.tab = tab;
+    ['home', 'gacha', 'closet'].forEach(function (t) { document.getElementById('scr-' + t).hidden = t !== tab; });
+    var inRoom = tab === 'room';
+    document.getElementById('roomHud').hidden = !inRoom;
+    document.getElementById('roomsBar').hidden = !inRoom;
+    document.getElementById('nearPill').hidden = !inRoom;
+    document.querySelectorAll('.tabs button').forEach(function (b) { if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    if (tab === 'home') renderHome();
+    if (tab === 'closet') renderCloset();
+    if (tab === 'gacha') renderGacha();
+  }
+  document.querySelectorAll('.tabs button').forEach(function (b) { b.addEventListener('click', function () { showTab(b.dataset.tab); }); });
+  document.querySelectorAll('[data-enter]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var m = b.dataset.enter;
+      if (st.mode !== m) { if (me.seat) standUp(me); loadRoom(m); me.px = 6.5; me.py = 9.5; me.path = []; }
+      showTab('room'); toast(MODES[m].title + 'に入りました');
+    });
+  });
+  function renderHome() {
+    var tot = 4320 + st.sec;
+    document.getElementById('today').textContent = Math.floor(tot / 3600) + '時間' + pad(Math.floor(tot % 3600 / 60)) + '分';
+    drawPreview(document.getElementById('homeAv'), me.skin, me.face);
+    renderJin();
+    var days = AREA.days + (st.sec >= TICKET_SEC ? 1 : 0), mins = days * AREA.perDay;
+    document.getElementById('saved').textContent = Math.floor(mins / 60) + '時間' + pad(mins % 60) + '分';
+    document.getElementById('savedCalc').textContent = AREA.facility + 'は' + AREA.close + '時閉館。そのあと仲間と勉強した日：' + days + '日';
+    document.getElementById('savedBar').style.width = Math.min(100, days / AREA.goal * 100) + '%';
+    document.getElementById('savedNote').textContent = st.sec >= TICKET_SEC ? '今日の分もふえました（30分以上勉強した日を数えます）' : '今日も' + AREA.close + '時以降に30分勉強すると +1日';
+    var d = new Date(), ev = new Date(d); ev.setHours(21, 0, 0, 0);
+    var left = Math.round((ev - d) / 60000);
+    document.getElementById('evLeft').textContent = left > 0 ? 'あと' + (left >= 60 ? Math.floor(left / 60) + '時間' : '') + (left % 60) + '分' : (left > -50 ? 'いま開催中' : '明日の21時');
+  }
+  function renderGacha() {
+    document.getElementById('pullT').disabled = st.tickets < 1;
+    document.getElementById('pullG').disabled = st.gems < 150;
+    document.getElementById('gems').textContent = st.gems;
+    document.getElementById('tickets').textContent = st.tickets;
+  }
+  var lineupEl = document.getElementById('lineup');
+  SKINS.forEach(function (k) {
+    var d = document.createElement('div'), i = document.createElement('i'), sp = document.createElement('span'), b = document.createElement('b');
+    i.style.background = k.body; sp.textContent = (k.limited ? '★ ' : '') + k.name; b.textContent = k.r; b.style.color = RAR_COLOR[k.r];
+    d.appendChild(i); d.appendChild(sp); d.appendChild(b); lineupEl.appendChild(d);
+  });
+  function pull(useTicket) {
+    if (useTicket ? st.tickets < 1 : st.gems < 150) return;
+    if (useTicket) st.tickets -= 1; else st.gems -= 150;
+    var pool = SKINS.map(function (k, i) { return i; }).filter(function (i) { return useTicket || !SKINS[i].limited; });
+    var total = pool.reduce(function (a, i) { return a + WEIGHT[SKINS[i].r]; }, 0), r = Math.random() * total, got = pool[pool.length - 1];
+    for (var j = 0; j < pool.length; j++) { r -= WEIGHT[SKINS[pool[j]].r]; if (r <= 0) { got = pool[j]; break; } }
+    var dup = st.owned.indexOf(got) >= 0;
+    if (dup) st.gems += 20; else st.owned.push(got);
+    renderGacha(); updateHud();
+    var stage = document.querySelector('#scr-gacha .stage');
+    document.getElementById('gIdle').hidden = false; document.getElementById('gResult').hidden = true;
+    document.getElementById('gIdle').querySelector('.nm').textContent = 'ガラガラ…';
+    stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
+    setTimeout(function () {
+      var k = SKINS[got];
+      document.getElementById('gIdle').hidden = true; document.getElementById('gResult').hidden = false;
+      document.getElementById('gIdle').querySelector('.nm').textContent = '勉強ガチャ';
+      var rar = document.getElementById('gRar'); rar.textContent = RAR_LABEL[k.r]; rar.style.color = RAR_COLOR[k.r];
+      document.getElementById('gName').textContent = k.name;
+      document.getElementById('gLimited').hidden = !k.limited;
+      document.getElementById('gNote').textContent = dup ? 'もう持っていたのでジェム20に変換しました' : 'きせかえに追加しました';
+      drawPreview(document.getElementById('gAv'), k, me.face);
+    }, reduceMotion ? 0 : 650);
+  }
+  document.getElementById('pullT').addEventListener('click', function () { pull(true); });
+  document.getElementById('pullG').addEventListener('click', function () { pull(false); });
+  var CATS = [['hair', 'かみがた'], ['hairColor', 'かみの色'], ['eye', 'め'], ['eyeColor', 'めの色'], ['brow', 'まゆ'], ['mouth', 'くち'], ['skinTone', 'はだの色'], ['cheek', 'ほっぺ'], ['glasses', 'めがね']];
+  var closetSeg = 'face', curCat = 'hair';
+  var LOCKED_FACE = Object.assign({}, DEFAULT_FACE, { hairColor: '#CFC3D8', skinColor: '#F2ECF4', eye: 'dot', mouth: 'small', cheek: 'none' });
+  document.querySelectorAll('[data-seg]').forEach(function (b) {
+    b.addEventListener('click', function () { closetSeg = b.dataset.seg; renderCloset(); });
+  });
+  document.getElementById('nameIn').addEventListener('input', function (e) { me.name = e.target.value.trim() || 'あなた'; });
+  document.getElementById('randomBtn').addEventListener('click', function () {
+    function r(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    me.face = { hair: r(PARTS.hair)[0], hairColor: r(HAIR_COLORS), eye: r(PARTS.eye)[0], eyeColor: r(EYE_COLORS), brow: r(PARTS.brow)[0], mouth: r(PARTS.mouth)[0],
+                skinTone: Math.floor(Math.random() * SKIN_TONES.length), cheek: r(PARTS.cheek)[0], glasses: Math.random() < 0.25 ? r(PARTS.glasses)[0] : 'none' };
+    renderCloset();
+  });
+  function optionList(cat) {
+    if (cat === 'hairColor') return HAIR_COLORS.map(function (c) { return [c, '', c]; });
+    if (cat === 'eyeColor') return EYE_COLORS.map(function (c) { return [c, '', c]; });
+    if (cat === 'skinTone') return SKIN_TONES.map(function (c, i) { return [i, '', c]; });
+    return PARTS[cat];
+  }
+  function renderCloset() {
+    var k = SKINS[st.equipped];
+    drawPreview(document.getElementById('cAv'), k, me.face);
+    document.querySelectorAll('[data-seg]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.seg === closetSeg)); });
+    document.getElementById('facePane').hidden = closetSeg !== 'face';
+    document.getElementById('clothesPane').hidden = closetSeg !== 'clothes';
+    document.getElementById('cCount').textContent = closetSeg === 'face' ? 'パーツをタップするとすぐ反映されます' : k.name + '　（所持 ' + st.owned.length + ' / ' + SKINS.length + '）';
+    if (closetSeg === 'face') {
+      var cats = document.getElementById('cats'); cats.textContent = '';
+      CATS.forEach(function (c) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = c[1]; b.setAttribute('aria-pressed', String(c[0] === curCat));
+        b.addEventListener('click', function () { curCat = c[0]; renderCloset(); });
+        cats.appendChild(b);
+      });
+      var opts = document.getElementById('opts'); opts.textContent = '';
+      optionList(curCat).forEach(function (o) {
+        var val = o[0], b = document.createElement('button'), lb = document.createElement('span');
+        b.type = 'button'; b.setAttribute('aria-pressed', String(me.face[curCat] === val));
+        if (o[2]) {
+          var sw = document.createElement('i'); sw.className = 'sw'; sw.style.background = o[2]; b.appendChild(sw);
+          b.setAttribute('aria-label', ({ hairColor: 'かみの色 ', eyeColor: 'めの色 ', skinTone: 'はだの色 ' })[curCat] + (typeof val === 'number' ? val + 1 : val));
+        } else {
+          var cv = document.createElement('canvas'); cv.width = 112; cv.height = 112; cv.style.width = '56px'; cv.style.height = '56px'; cv.setAttribute('aria-hidden', 'true');
+          var f = Object.assign({}, me.face); f[curCat] = val;
+          b.appendChild(cv); drawPreview(cv, k, f, true);
+          lb.textContent = o[1]; b.appendChild(lb);
+        }
+        b.addEventListener('click', function () { me.face[curCat] = val; renderCloset(); });
+        opts.appendChild(b);
+      });
+      return;
+    }
+    var grid = document.getElementById('closet'); grid.textContent = '';
+    SKINS.forEach(function (sk, i) {
+      var has = st.owned.indexOf(i) >= 0, b = document.createElement('button'), cv = document.createElement('canvas'), lb = document.createElement('span');
+      b.type = 'button'; b.disabled = !has; b.setAttribute('aria-pressed', String(st.equipped === i));
+      cv.width = 120; cv.height = 144; cv.style.width = '60px'; cv.style.height = '72px'; cv.setAttribute('aria-hidden', 'true');
+      lb.textContent = has ? sk.name : '？？？';
+      b.setAttribute('aria-label', has ? sk.name + 'に着替える' : 'まだ持っていないスキン');
+      b.appendChild(cv); b.appendChild(lb); grid.appendChild(b);
+      drawPreview(cv, has ? sk : LOCKED, has ? me.face : LOCKED_FACE);
+      b.addEventListener('click', function () { st.equipped = i; me.skin = sk; renderCloset(); toast(sk.name + 'に着替えました'); });
+    });
+  }
+
+  me.face = Object.assign({}, DEFAULT_FACE);
+  loadRoom('region'); updateHud(); showTab('home');
+  camX = P(me.px, me.py)[0]; camY = P(me.px, me.py)[1] - 30;
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
+</body></html>
