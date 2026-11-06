@@ -82,7 +82,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 /* bottom tab bar */
 .tabs {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
   background: #FFFFFF; border-top: 1px solid var(--line);
   padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
 }
@@ -133,6 +133,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .q .x { border: 0; background: transparent; color: var(--muted); min-height: 36px; font-weight: 700; }
 .act-n { font-weight: 800; text-align: center; }
 .act button { border: 0; border-radius: 14px; min-height: 44px; font-weight: 800; font-size: 14px; background: #F3EEF6; }
+.act button:disabled { color: var(--muted); cursor: default; }
 .act .cheer { background: var(--pink); color: #fff; }
 .act-row { display: flex; gap: 8px; }
 .act-row button { flex: 1; color: var(--pink-ink); }
@@ -178,6 +179,36 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .opts button[aria-pressed="true"] { border-color: var(--pink); }
 .opts canvas { display: block; }
 .opts .sw { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(58, 46, 63, 0.25); }
+
+/* friends screen */
+.fr-head { display: flex; align-items: center; gap: 14px; }
+.fr-ic { width: 52px; height: 52px; border-radius: 16px; background: #E9F7F2; border: 2px solid #BFE9DA; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.fr-k { font-size: 11px; font-weight: 800; color: var(--muted); }
+.fr-t { font-size: 20px; font-weight: 800; }
+.fr-id { font-size: 12px; color: var(--muted); font-weight: 700; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.fr-id button { border: 1px solid var(--line); background: #fff; border-radius: 8px; font-size: 11px; padding: 2px 8px; min-height: 26px; font-weight: 700; }
+.fr-cnt { margin-left: auto; background: #FFF4D6; border-radius: 14px; padding: 8px 12px; text-align: center; flex-shrink: 0; }
+.fr-cnt b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+.fr-cnt span { font-size: 11px; color: var(--muted); font-weight: 800; }
+.sec { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; margin: 4px 0 0; }
+.sec::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.fr-search { display: flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 4px 6px 4px 14px; }
+.fr-search:focus-within { border-color: var(--pink); }
+.fr-search input { flex: 1; min-width: 0; border: 0; outline: 0; font-size: 14px; padding: 8px 0; background: transparent; }
+.fr-search button { border: 0; background: var(--pink); color: #fff; border-radius: 999px; padding: 0 16px; min-height: 38px; font-weight: 800; font-size: 13px; }
+.fr-list { display: flex; flex-direction: column; gap: 8px; }
+.fr-row { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 16px; padding: 10px 12px; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.08); }
+.fr-row canvas { width: 44px; height: 44px; border-radius: 50%; background: #F3EEF6; flex-shrink: 0; }
+.fr-row .who { flex: 1; min-width: 0; }
+.fr-row .nm { font-weight: 800; font-size: 14px; }
+.fr-row .meta { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-row .btns { display: flex; gap: 6px; flex-shrink: 0; }
+.fr-btn { border: 0; border-radius: 10px; min-height: 36px; padding: 0 12px; font-weight: 800; font-size: 12px; background: var(--pink); color: #fff; }
+.fr-btn.sub { background: #F3EEF6; color: var(--ink); }
+.fr-btn:disabled { background: #E6DCEB; color: var(--muted); cursor: default; }
+.fr-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 12px; background: #fff; border-radius: 16px; margin: 0; }
+.fr-note { font-size: 11px; color: var(--muted); line-height: 1.6; margin: 0; }
+.fr-on { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 4px; }
 </style>
 
 <div id="app">
@@ -216,6 +247,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   <div class="act" id="act" role="dialog" aria-label="この人に" hidden>
     <div class="act-n" id="actName"></div>
     <button type="button" id="actCheer" class="cheer">「がんばれ」を送る</button>
+    <button type="button" id="actFriend">友だち申請する</button>
     <div class="act-row"><button type="button" id="actBlock">ブロック</button><button type="button" id="actReport">通報</button></div>
     <button type="button" id="actClose" class="x">とじる</button>
   </div>
@@ -313,10 +345,46 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     </div>
   </section>
 
+  <section class="screen" id="scr-friends" aria-label="友だち" hidden>
+    <div class="wrap">
+      <div class="card fr-head">
+        <div class="fr-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#146E5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M17 14.5a5 5 0 0 1 4.5 5"></path></svg></div>
+        <div style="min-width:0">
+          <div class="fr-k">ソーシャル</div>
+          <div class="fr-t">友だちを追加</div>
+          <div class="fr-id">あなたのユーザー名 <span id="myId">@anata_2026</span><button type="button" id="copyId">コピー</button></div>
+        </div>
+        <div class="fr-cnt"><b id="frCount">0</b><span>フレンド</span></div>
+      </div>
+
+      <h2 class="sec">新しい友だちを追加</h2>
+      <form class="fr-search" id="frSearch" role="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6276" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+        <input id="frQ" type="text" autocomplete="off" placeholder="@ユーザー名で友だちを探す" aria-label="ユーザー名">
+        <button type="submit">探す</button>
+      </form>
+      <p class="fr-note">ユーザー名をそのまま入れると見つかります（例: @kei_kitakata）。名前の一部では探せません。</p>
+      <div class="fr-list" id="frResult"></div>
+
+      <h2 class="sec">届いた申請</h2>
+      <div class="fr-list" id="frIncoming"></div>
+
+      <h2 class="sec">知り合いかもしれない人</h2>
+      <p class="fr-note">会津地域の部屋で、同じ時間に勉強した人です。</p>
+      <div class="fr-list" id="frSuggest"></div>
+
+      <h2 class="sec">友だちリスト</h2>
+      <div class="fr-list" id="frList"></div>
+
+      <p class="fr-note">友だちになると、なかよし部屋に一緒に入れます。友だちになっても、電話番号やSNSなどの連絡先はおたがいに見えません。申請は相手が承認するまで友だちになりません。</p>
+    </div>
+  </section>
+
   <nav class="tabs" aria-label="メニュー">
     <button type="button" data-tab="home" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>ホーム</button>
     <button type="button" data-tab="room"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16"></path><path d="M6 19v-6h12v6"></path><path d="M9 13V8h6v5"></path><path d="M12 5v3"></path></svg>自習室</button>
     <button type="button" data-tab="gacha"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"></circle><path d="M6 9h12"></path><path d="M8 15l-1 6h10l-1-6"></path></svg>ガチャ</button>
+    <button type="button" data-tab="friends"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M17 14.5a5 5 0 0 1 4.5 5"></path></svg>友だち</button>
     <button type="button" data-tab="closet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4l3 2 3-2 5 3-2 4-2-1v10H8V10l-2 1-2-4z"></path></svg>きせかえ</button>
   </nav>
 </div>
@@ -1025,7 +1093,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     toast(p.name + 'さんに「がんばれ」を送りました');
   }
   var actP = null;
-  function openAct(p) { actP = p; document.getElementById('actName').textContent = p.name + 'さん'; document.getElementById('act').hidden = false; }
+  function openAct(p) { actP = p; document.getElementById('actName').textContent = p.name + 'さん'; updateActFriend(p); document.getElementById('act').hidden = false; }
   function closeAct() { actP = null; document.getElementById('act').hidden = true; }
   document.getElementById('actClose').addEventListener('click', closeAct);
   document.getElementById('actCheer').addEventListener('click', function () { var p = actP; closeAct(); if (p) sendCheer(p); });
@@ -1142,7 +1210,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   var LOCKED = { body: '#E6DCEB', hair: '#CFC3D8' };
   function showTab(tab) {
     st.tab = tab;
-    ['home', 'gacha', 'closet'].forEach(function (t) { document.getElementById('scr-' + t).hidden = t !== tab; });
+    ['home', 'gacha', 'closet', 'friends'].forEach(function (t) { document.getElementById('scr-' + t).hidden = t !== tab; });
     var inRoom = tab === 'room';
     document.getElementById('roomHud').hidden = !inRoom;
     document.getElementById('roomsBar').hidden = !inRoom;
@@ -1151,6 +1219,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     if (tab === 'home') renderHome();
     if (tab === 'closet') renderCloset();
     if (tab === 'gacha') renderGacha();
+    if (tab === 'friends') renderFriends();
   }
   document.querySelectorAll('.tabs button').forEach(function (b) { b.addEventListener('click', function () { showTab(b.dataset.tab); }); });
   document.querySelectorAll('[data-enter]').forEach(function (b) {
@@ -1270,6 +1339,118 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       b.addEventListener('click', function () { st.equipped = i; me.skin = sk; renderCloset(); toast(sk.name + 'に着替えました'); });
     });
   }
+
+  // ---------- friends (mock: data lives only in this page) ----------
+  var FR = [
+    { id: 'haru_0412', n: 'はる', town: '会津若松市', k: 6, status: 'friend', on: '勉強中' },
+    { id: 'yuu_misato', n: 'ゆう', town: '会津美里町', k: 1, status: 'friend', on: '' },
+    { id: 'mio_bange', n: 'みお', town: '会津坂下町', k: 4, status: 'incoming' },
+    { id: 'yuzu_study', n: 'ゆず', town: '会津坂下町', k: 1, status: 'none', suggest: true },
+    { id: 'mochi_yanaizu', n: 'もち', town: '柳津町', k: 3, status: 'none', suggest: true },
+    { id: 'sora_aizu', n: 'そら', town: '会津美里町', k: 4, status: 'none', suggest: true },
+    { id: 'shizuku_w', n: 'しずく', town: '会津若松市', k: 5, status: 'none', suggest: true },
+    { id: 'kei_kitakata', n: 'kei', town: '喜多方市', k: 2, status: 'none' },
+    { id: 'nana_tadami', n: 'なな', town: '只見町', k: 7, status: 'none' },
+    { id: 'taro_inawa', n: 'たろう', town: '猪苗代町', k: 0, status: 'none' },
+    { id: 'rin_wakamatsu', n: 'りん', town: '会津若松市', k: 6, status: 'none' }
+  ];
+  function frById(id) { return FR.filter(function (f) { return f.id === id; })[0]; }
+  function frByRoomName(name) { var n = name.split('(')[0]; return FR.filter(function (f) { return f.n === n; })[0]; }
+  function frAvatar(f) {
+    var cv = document.createElement('canvas'); cv.width = 88; cv.height = 88; cv.setAttribute('aria-hidden', 'true');
+    drawPreview(cv, SKINS[f.k], faceFor(f.id.length * 3 + f.k * 5, SKINS[f.k].hair), true);
+    return cv;
+  }
+  function frButton(label, cls, fn, disabled) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'fr-btn' + (cls ? ' ' + cls : ''); b.textContent = label;
+    if (disabled) b.disabled = true; else b.addEventListener('click', fn);
+    return b;
+  }
+  function frRow(f, meta, buttons) {
+    var row = document.createElement('div'); row.className = 'fr-row';
+    row.appendChild(frAvatar(f));
+    var who = document.createElement('div'); who.className = 'who';
+    var nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = f.n;
+    var mt = document.createElement('div'); mt.className = 'meta'; mt.innerHTML = meta;
+    who.appendChild(nm); who.appendChild(mt); row.appendChild(who);
+    var bs = document.createElement('div'); bs.className = 'btns';
+    buttons.forEach(function (b) { bs.appendChild(b); }); row.appendChild(bs);
+    return row;
+  }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function sendRequest(f) {
+    f.status = 'sent'; renderFriends(); toast(f.n + 'さんに友だち申請を送りました');
+    setTimeout(function () {
+      if (f.status !== 'sent') return;
+      f.status = 'friend'; f.on = ''; toast(f.n + 'さんが申請を承認しました（デモ）');
+      if (st.tab === 'friends') renderFriends();
+    }, 3000);
+  }
+  function actionFor(f) {
+    if (f.status === 'friend') return frButton('友だち', 'sub', null, true);
+    if (f.status === 'sent') return frButton('申請中', 'sub', null, true);
+    if (f.status === 'incoming') return frButton('承認する', '', function () { f.status = 'friend'; renderFriends(); toast(f.n + 'さんと友だちになりました'); });
+    return frButton('申請する', '', function () { sendRequest(f); });
+  }
+  var frLastQuery = '';
+  function renderSearch() {
+    var box = document.getElementById('frResult'); box.innerHTML = '';
+    if (!frLastQuery) return;
+    var q = frLastQuery.replace(/^[@＠]/, '').trim().toLowerCase();
+    var f = frById(q);
+    if (q === 'anata_2026') { box.innerHTML = '<p class="fr-empty">これはあなたのユーザー名です</p>'; return; }
+    if (!f) { box.innerHTML = '<p class="fr-empty">「@' + esc(q) + '」は見つかりませんでした</p>'; return; }
+    box.appendChild(frRow(f, '@' + esc(f.id) + ' ・ ' + esc(f.town), [actionFor(f)]));
+  }
+  function renderFriends() {
+    var friends = FR.filter(function (f) { return f.status === 'friend'; });
+    document.getElementById('frCount').textContent = friends.length;
+    renderSearch();
+    var inc = document.getElementById('frIncoming'); inc.innerHTML = '';
+    var incoming = FR.filter(function (f) { return f.status === 'incoming'; });
+    if (!incoming.length) inc.innerHTML = '<p class="fr-empty">届いている申請はありません</p>';
+    incoming.forEach(function (f) {
+      inc.appendChild(frRow(f, '@' + esc(f.id) + ' ・ ' + esc(f.town), [
+        frButton('承認', '', function () { f.status = 'friend'; renderFriends(); toast(f.n + 'さんと友だちになりました'); }),
+        frButton('削除', 'sub', function () { f.status = 'none'; renderFriends(); toast('申請を削除しました（相手には知らされません）'); })
+      ]));
+    });
+    var sug = document.getElementById('frSuggest'); sug.innerHTML = '';
+    FR.filter(function (f) { return f.suggest && f.status !== 'friend'; }).forEach(function (f) {
+      sug.appendChild(frRow(f, esc(f.town) + ' ・ 会津地域の部屋', [actionFor(f)]));
+    });
+    if (!sug.children.length) sug.innerHTML = '<p class="fr-empty">いまはいません</p>';
+    var list = document.getElementById('frList'); list.innerHTML = '';
+    if (!friends.length) list.innerHTML = '<p class="fr-empty">まだ友だちがいません。上から探してみよう</p>';
+    friends.forEach(function (f) {
+      var meta = (f.on ? '<span class="fr-on"></span>' + esc(f.on) + ' ・ ' : 'オフライン ・ ') + esc(f.town);
+      list.appendChild(frRow(f, meta, [
+        frButton('さそう', '', function () { toast(f.n + 'さんをなかよし部屋にさそいました'); }),
+        frButton('解除', 'sub', function () { f.status = 'none'; renderFriends(); toast(f.n + 'さんを友だちから外しました'); })
+      ]));
+    });
+    var fc = document.querySelector('[data-enter="friends"] .n'); if (fc) fc.textContent = (friends.length + 1) + '人';
+  }
+  document.getElementById('frSearch').addEventListener('submit', function (e) {
+    e.preventDefault(); frLastQuery = document.getElementById('frQ').value.trim(); renderSearch();
+  });
+  document.getElementById('copyId').addEventListener('click', function () {
+    var t = document.getElementById('myId').textContent;
+    try { navigator.clipboard.writeText(t).then(function () { toast('ユーザー名をコピーしました'); }, function () { toast(t); }); } catch (e) { toast(t); }
+  });
+  function updateActFriend(p) {
+    var b = document.getElementById('actFriend');
+    var f = st.mode !== 'anon' ? frByRoomName(p.name) : null;
+    if (st.mode === 'anon') { b.disabled = true; b.textContent = '全国の部屋では申請できません'; return; }
+    if (!f) { b.disabled = true; b.textContent = '友だち申請する'; return; }
+    b.disabled = f.status !== 'none' && f.status !== 'incoming';
+    b.textContent = f.status === 'friend' ? 'もう友だちです' : f.status === 'sent' ? '申請中です' : f.status === 'incoming' ? '申請を承認する' : '友だち申請する';
+  }
+  document.getElementById('actFriend').addEventListener('click', function () {
+    var p = actP; closeAct(); if (!p) return;
+    var f = frByRoomName(p.name); if (!f) return;
+    if (f.status === 'incoming') { f.status = 'friend'; toast(f.n + 'さんと友だちになりました'); } else sendRequest(f);
+  });
 
   me.face = Object.assign({}, DEFAULT_FACE);
   loadRoom('region'); updateHud(); showTab('home');
