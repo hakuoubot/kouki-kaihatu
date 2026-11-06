@@ -208,6 +208,37 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .fr-btn:disabled { background: #E6DCEB; color: var(--muted); cursor: default; }
 .fr-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 12px; background: #fff; border-radius: 16px; margin: 0; }
 .fr-note { font-size: 11px; color: var(--muted); line-height: 1.6; margin: 0; }
+/* room lobby (自習室 tab) */
+.rooms .back { color: var(--pink-ink); }
+.rooms .room-ttl { display: flex; align-items: center; padding: 0 12px 0 4px; font-size: 13px; font-weight: 800; white-space: nowrap; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
+.lb-hero { display: flex; flex-direction: column; gap: 10px; }
+.lb-k { font-size: 11px; font-weight: 800; color: var(--muted); }
+.lb-t { font-size: 24px; font-weight: 800; line-height: 1.3; margin: 0; }
+.lb-d { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; }
+.mk { display: flex; flex-direction: column; gap: 10px; background: #FFF4D6; border-radius: 20px; padding: 16px; }
+.mk-row { display: flex; align-items: center; gap: 12px; }
+.mk-plus { width: 46px; height: 46px; border-radius: 14px; border: 2px solid var(--pink); color: var(--pink-ink); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; flex-shrink: 0; background: #fff; }
+.mk-t { font-size: 15px; font-weight: 800; }
+.mk-d { font-size: 12px; color: var(--muted); }
+.mk-btn { border: 0; background: var(--pink); color: #fff; border-radius: 999px; min-height: 46px; font-weight: 800; font-size: 14px; box-shadow: 0 3px 0 var(--pink-ink); }
+.code-row { display: flex; gap: 8px; }
+.code-row input { flex: 1; min-width: 0; border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: #fff; }
+.code-row button { border: 0; background: var(--ink); color: #fff; border-radius: 12px; padding: 0 14px; font-weight: 800; font-size: 13px; min-height: 42px; }
+.rc-cat { display: inline-block; font-size: 10px; font-weight: 800; color: var(--muted); background: #F3EEF6; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; }
+.roomcard .n .live { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #F0675A; margin-right: 4px; vertical-align: 1px; }
+.mkbox { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 7; width: min(340px, calc(100% - 32px)); max-height: calc(100% - 140px); overflow-y: auto; background: #fff; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 30px rgba(58, 46, 63, 0.25); }
+.mkbox h2 { margin: 0; font-size: 17px; font-weight: 800; }
+.mkbox label { font-size: 12px; font-weight: 800; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.mkbox input[type=text], .mkbox select { border: 2px solid var(--line); border-radius: 12px; padding: 9px 12px; font-size: 14px; font-weight: 700; color: var(--ink); background: #fff; font-family: inherit; }
+.mkbox fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.mkbox legend { font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 4px; padding: 0; }
+.mkbox .opt { flex-direction: row; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); background: #F8F4FA; border-radius: 12px; padding: 10px 12px; }
+.mkbox .opt small { display: block; font-size: 11px; color: var(--muted); font-weight: 700; }
+.mkbox .err { font-size: 12px; color: #C0392B; font-weight: 800; margin: 0; }
+.mkbox .row2 { display: flex; gap: 8px; }
+.mkbox .row2 button { flex: 1; border: 0; border-radius: 14px; min-height: 46px; font-weight: 800; font-size: 14px; }
+.mkbox .row2 .ok { background: var(--pink); color: #fff; }
+.mkbox .row2 .no { background: #F3EEF6; }
 .fr-on { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 4px; }
 </style>
 
@@ -215,10 +246,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   <canvas id="c" aria-label="斜め見下ろしの自習室。光っているイスをタップすると座ります。ほかの人をタップするとがんばれスタンプを送れます"></canvas>
 
   <header class="top">
-    <div class="rooms" id="roomsBar" role="group" aria-label="部屋をえらぶ">
-      <button type="button" data-room="region" aria-pressed="true">会津地域</button>
-      <button type="button" data-room="anon" aria-pressed="false">全国</button>
-      <button type="button" data-room="friends" aria-pressed="false">なかよし</button>
+    <div class="rooms" id="roomsBar" role="group" aria-label="いまいる部屋">
+      <button type="button" class="back" id="backLobby">‹ 部屋一覧</button>
+      <span class="room-ttl" id="roomTitle">会津地域の部屋</span>
     </div>
     <div class="pills">
       <div class="pill" id="nearPill" title="近くにいる人">
@@ -379,6 +409,48 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       <p class="fr-note">友だちになると、なかよし部屋に一緒に入れます。友だちになっても、電話番号やSNSなどの連絡先はおたがいに見えません。申請は相手が承認するまで友だちになりません。</p>
     </div>
   </section>
+
+  <section class="screen" id="scr-rooms" aria-label="自習室をさがす" hidden>
+    <div class="wrap">
+      <div class="card lb-hero">
+        <div class="lb-k">自習室をさがす</div>
+        <h1 class="lb-t">いっしょに勉強する<br>部屋を見つけよう</h1>
+        <p class="lb-d">地域・受験・テスト前・資格など、目的にあった部屋に入れます。自分で部屋を作ることもできます。</p>
+        <form class="fr-search" id="lbSearch" role="search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6276" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+          <input id="lbQ" type="search" autocomplete="off" placeholder="部屋の名前でさがす" aria-label="部屋の名前">
+        </form>
+        <div class="cats" id="lbCats" role="group" aria-label="カテゴリ"></div>
+      </div>
+
+      <div class="mk">
+        <div class="mk-row"><div class="mk-plus" aria-hidden="true">＋</div><div><div class="mk-t">自分の部屋を作る</div><div class="mk-d">クラス・部活・友だちとの勉強の場所を作れます</div></div></div>
+        <button type="button" class="mk-btn" id="mkOpen">＋ 部屋を作る</button>
+        <div class="code-row"><input id="codeIn" type="text" maxlength="6" placeholder="ルームコード" aria-label="ルームコード" autocomplete="off"><button type="button" id="codeGo">コードで入る</button></div>
+      </div>
+
+      <h2 class="sec">参加中の部屋</h2>
+      <div class="fr-list" id="lbJoined"></div>
+
+      <h2 class="sec" id="lbAllH">みんなの部屋</h2>
+      <div class="fr-list" id="lbAll"></div>
+      <p class="fr-note">部屋の名前にもNGワードのチェックがかかります。ルームコードの部屋は一覧に出ません。</p>
+    </div>
+  </section>
+
+  <div class="mkbox" id="mkBox" role="dialog" aria-label="部屋を作る" hidden>
+    <h2>部屋を作る</h2>
+    <label>部屋の名前<input id="mkName" type="text" maxlength="16" placeholder="例: 1年3組 テスト勉強会" autocomplete="off"></label>
+    <label>カテゴリ<select id="mkCat"></select></label>
+    <fieldset>
+      <legend>だれが入れる？</legend>
+      <label class="opt"><input type="radio" name="mkVis" value="public" checked><span>みんなに公開<small>一覧に出て、だれでも入れます</small></span></label>
+      <label class="opt"><input type="radio" name="mkVis" value="friends"><span>友だちだけ<small>友だちリストの人だけ入れます</small></span></label>
+      <label class="opt"><input type="radio" name="mkVis" value="code"><span>ルームコードを知っている人だけ<small>一覧に出ません。クラスや部活に</small></span></label>
+    </fieldset>
+    <p class="err" id="mkErr" hidden></p>
+    <div class="row2"><button type="button" class="no" id="mkCancel">やめる</button><button type="button" class="ok" id="mkOk">作って入る</button></div>
+  </div>
 
   <nav class="tabs" aria-label="メニュー">
     <button type="button" data-tab="home" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>ホーム</button>
@@ -962,7 +1034,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   function sitAt(a, s) { s.who = a; a.seat = s; a.px = s.x + 0.5; a.py = s.y + 0.5; a.fx = 0; a.fy = 1; a.path = []; }
 
   // ---------- state ----------
-  var st = { mode: 'region', sec: 0, tickets: 2, gems: 300, earnedAt: -999, tab: 'home', owned: [0, 1], equipped: 0 };
+  var st = { inRoom: false, mode: 'region', sec: 0, tickets: 2, gems: 300, earnedAt: -999, tab: 'home', owned: [0, 1], equipped: 0 };
   var particles = [], now = 0;
   function loadRoom(mode) {
     st.mode = mode;
@@ -980,7 +1052,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       var p = makePerson({ name: o.n, k: o.k, x: i ? 10 : 1, y: i ? 8 : 5, wander: true, lines: o.lines, seed: 40 + i * 9 });
       p.idleUntil = 1 + i * 2; people.push(p);
     });
-    document.querySelectorAll('.rooms button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.room === mode)); });
+    document.getElementById('roomTitle').textContent = cfg.title;
   }
 
   // ---------- HUD ----------
@@ -1012,9 +1084,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   PRESETS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.addEventListener('click', function () { me.msg = t; }); presetsEl.appendChild(b); });
   document.getElementById('say').addEventListener('submit', function (e) { e.preventDefault(); var i = document.getElementById('chatIn'), t = i.value.trim(); if (!t) return; t = t.replace(/\d[\d-]{8,}\d/g, '＊＊＊').replace(/@[A-Za-z0-9_.]+/g, '＊＊＊'); me.msg = t; i.value = ''; });
   document.getElementById('say').addEventListener('submit', function (e) { e.preventDefault(); });
-  document.querySelectorAll('.rooms button').forEach(function (b) {
-    b.addEventListener('click', function () { if (st.mode !== b.dataset.room) { loadRoom(b.dataset.room); toast(MODES[b.dataset.room].title + 'に入りました'); } });
-  });
 
   // ---------- area map (jintori) + one-tap survey ----------
   var AREAS = [
@@ -1203,7 +1272,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   }
   function frame(ts) {
     var dt = Math.min(0.05, (ts - last) / 1000); last = ts; now += dt;
-    update(dt); if (st.tab === 'room') render(now);
+    update(dt); if (st.tab === 'room' && st.inRoom) render(now);
     requestAnimationFrame(frame);
   }
   // ---------- app shell: tabs, home, gacha, closet ----------
@@ -1211,7 +1280,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   function showTab(tab) {
     st.tab = tab;
     ['home', 'gacha', 'closet', 'friends'].forEach(function (t) { document.getElementById('scr-' + t).hidden = t !== tab; });
-    var inRoom = tab === 'room';
+    document.getElementById('scr-rooms').hidden = !(tab === 'room' && !st.inRoom);
+    var inRoom = tab === 'room' && st.inRoom;
     document.getElementById('roomHud').hidden = !inRoom;
     document.getElementById('roomsBar').hidden = !inRoom;
     document.getElementById('nearPill').hidden = !inRoom;
@@ -1220,14 +1290,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     if (tab === 'closet') renderCloset();
     if (tab === 'gacha') renderGacha();
     if (tab === 'friends') renderFriends();
+    if (tab === 'room' && !st.inRoom) renderLobby();
   }
   document.querySelectorAll('.tabs button').forEach(function (b) { b.addEventListener('click', function () { showTab(b.dataset.tab); }); });
-  document.querySelectorAll('[data-enter]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var m = b.dataset.enter;
-      if (st.mode !== m) { if (me.seat) standUp(me); loadRoom(m); me.px = 6.5; me.py = 9.5; me.path = []; }
-      showTab('room'); toast(MODES[m].title + 'に入りました');
-    });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-enter]');
+    if (b) enterRoom(b.dataset.enter);
   });
   function renderHome() {
     var tot = 4320 + st.sec;
@@ -1430,6 +1498,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       ]));
     });
     var fc = document.querySelector('[data-enter="friends"] .n'); if (fc) fc.textContent = (friends.length + 1) + '人';
+    var fr = roomById('friends'); if (fr) fr.n = friends.length + 1;
   }
   document.getElementById('frSearch').addEventListener('submit', function (e) {
     e.preventDefault(); frLastQuery = document.getElementById('frQ').value.trim(); renderSearch();
@@ -1450,6 +1519,103 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     var p = actP; closeAct(); if (!p) return;
     var f = frByRoomName(p.name); if (!f) return;
     if (f.status === 'incoming') { f.status = 'friend'; toast(f.n + 'さんと友だちになりました'); } else sendRequest(f);
+  });
+
+  // ---------- room lobby: find / create / join rooms ----------
+  var ROOM_CATS = ['地域', 'みんな', '受験', 'テスト前', '資格', '進路', '生活', '友だち', 'クラス・部活'];
+  var ROOMS = [
+    { id: 'region', t: '会津地域の部屋', cat: '地域', d: '会津若松市と周辺の町村の高校生だけ', n: 46, mark: '会', c: '#46C2A6', joined: true, vis: 'public' },
+    { id: 'anon', t: '全国もくもく部屋', cat: 'みんな', d: '名前は出さずに、だまって集中', n: 128, mark: '全', c: '#A08CE0', joined: true, vis: 'public' },
+    { id: 'friends', t: 'なかよし部屋', cat: '友だち', d: '友だちだけ', n: 3, mark: '友', c: '#FF7FA8', joined: true, vis: 'friends' },
+    { id: 'r_juken', t: '受験生 夜の自習室', cat: '受験', d: '高3・浪人生 毎晩22時まで', n: 31, mark: '受', c: '#5B8DEF', vis: 'public' },
+    { id: 'r_test', t: 'テスト前ラストスパート', cat: 'テスト前', d: '期末テストまでの2週間', n: 24, mark: 'テ', c: '#F0675A', vis: 'public' },
+    { id: 'r_kango', t: '看護・医療系をめざす部屋', cat: '進路', d: '看護学校・医療系の志望者', n: 12, mark: '看', c: '#1E9C7E', vis: 'public' },
+    { id: 'r_eiken', t: '英検2級もくもく', cat: '資格', d: '単語と過去問をコツコツ', n: 9, mark: '英', c: '#E3A92A', vis: 'public' },
+    { id: 'r_minami', t: '南会津町の部屋', cat: '地域', d: '南会津町に住んでいる高校生', n: 7, mark: '南', c: '#146E5B', vis: 'public' },
+    { id: 'r_asa', t: '朝勉の部屋', cat: '生活', d: '朝6時〜8時、登校前の30分', n: 5, mark: '朝', c: '#FFC94D', vis: 'public' },
+    { id: 'r_class', t: '1年3組 テスト勉強会', cat: 'クラス・部活', d: 'ルームコードで入る部屋', n: 6, mark: '組', c: '#8E6FD8', vis: 'code', code: 'AIZU21' }
+  ];
+  var NAME_POOL = [['ひなた', 1], ['こはる', 4], ['そうま', 0], ['あおい', 5], ['れん', 2], ['ゆい', 6], ['はると', 3], ['めい', 7], ['いつき', 1], ['さくら', 4]];
+  var NG_WORDS = ['死ね', 'しね', 'バカ', 'ばか', 'きもい', 'うざい'];
+  var lbCat = 'すべて';
+  function roomById(id) { return ROOMS.filter(function (r) { return r.id === id; })[0]; }
+  function ensureMode(r) {
+    if (MODES[r.id]) return;
+    var seated = [], k = Math.min(r.mine ? 0 : 6, r.n - 1);
+    for (var i = 0; i < k; i++) { var nm = NAME_POOL[(i * 3 + r.t.length) % NAME_POOL.length]; seated.push({ s: (i * 5 + 1) % 12, n: nm[0], k: nm[1], m: i === 0 ? 'がんばろう' : '' }); }
+    MODES[r.id] = { title: r.t, seated: seated, walkers: [] };
+  }
+  function enterRoom(id) {
+    var r = roomById(id); if (!r) return;
+    ensureMode(r); r.joined = true;
+    if (st.mode !== id) { if (me.seat) standUp(me); loadRoom(id); me.px = 6.5; me.py = 9.5; me.path = []; }
+    st.inRoom = true; showTab('room'); toast(r.t + 'に入りました');
+  }
+  document.getElementById('backLobby').addEventListener('click', function () {
+    if (me.seat) standUp(me);
+    st.inRoom = false; showTab('room');
+  });
+  function roomCard(r) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'roomcard'; b.dataset.enter = r.id;
+    var mark = document.createElement('span'); mark.className = 'mark'; mark.style.background = r.c; mark.textContent = r.mark;
+    var mid = document.createElement('span');
+    var t = document.createElement('span'); t.className = 't'; t.textContent = r.t;
+    var cat = document.createElement('span'); cat.className = 'rc-cat'; cat.textContent = r.vis === 'code' ? 'コード' : r.vis === 'friends' ? '友だちだけ' : r.cat;
+    var d = document.createElement('span'); d.className = 'd'; d.textContent = r.d;
+    mid.appendChild(t); mid.appendChild(cat); mid.appendChild(document.createElement('br')); mid.appendChild(d);
+    var n = document.createElement('span'); n.className = 'n'; n.innerHTML = '<span class="live"></span>' + r.n + '人';
+    b.appendChild(mark); b.appendChild(mid); b.appendChild(n);
+    return b;
+  }
+  function renderLobby() {
+    var cats = document.getElementById('lbCats');
+    if (!cats.children.length) {
+      ['すべて'].concat(ROOM_CATS.filter(function (c) { return c !== '友だち'; })).forEach(function (c) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = c;
+        b.addEventListener('click', function () { lbCat = c; renderLobby(); });
+        cats.appendChild(b);
+      });
+    }
+    Array.prototype.forEach.call(cats.children, function (b) { b.setAttribute('aria-pressed', String(b.textContent === lbCat)); });
+    var joined = document.getElementById('lbJoined'); joined.innerHTML = '';
+    ROOMS.filter(function (r) { return r.joined; }).forEach(function (r) { joined.appendChild(roomCard(r)); });
+    var q = document.getElementById('lbQ').value.trim();
+    var all = document.getElementById('lbAll'); all.innerHTML = '';
+    var list = ROOMS.filter(function (r) { return r.vis === 'public' && !r.joined && (lbCat === 'すべて' || r.cat === lbCat) && (!q || r.t.indexOf(q) >= 0); });
+    list.forEach(function (r) { all.appendChild(roomCard(r)); });
+    if (!list.length) all.innerHTML = '<p class="fr-empty">この条件の部屋はまだありません。作ってみよう</p>';
+  }
+  document.getElementById('lbQ').addEventListener('input', renderLobby);
+  document.getElementById('lbSearch').addEventListener('submit', function (e) { e.preventDefault(); });
+  document.getElementById('codeGo').addEventListener('click', function () {
+    var c = document.getElementById('codeIn').value.trim().toUpperCase();
+    var r = ROOMS.filter(function (x) { return x.code && x.code === c; })[0];
+    if (!r) { toast(c ? 'そのコードの部屋は見つかりませんでした' : 'ルームコードを入れてください（例: AIZU21）'); return; }
+    document.getElementById('codeIn').value = ''; enterRoom(r.id);
+  });
+  var mkSel = document.getElementById('mkCat');
+  ROOM_CATS.filter(function (c) { return c !== '友だち' && c !== 'みんな'; }).forEach(function (c) { var o = document.createElement('option'); o.textContent = c; mkSel.appendChild(o); });
+  mkSel.value = 'クラス・部活';
+  function mkClose() { document.getElementById('mkBox').hidden = true; }
+  document.getElementById('mkOpen').addEventListener('click', function () {
+    document.getElementById('mkErr').hidden = true; document.getElementById('mkName').value = '';
+    document.getElementById('mkBox').hidden = false; document.getElementById('mkName').focus();
+  });
+  document.getElementById('mkCancel').addEventListener('click', mkClose);
+  document.getElementById('mkName').addEventListener('input', function () { document.getElementById('mkErr').hidden = true; });
+  document.getElementById('mkOk').addEventListener('click', function () {
+    var name = document.getElementById('mkName').value.trim(), err = document.getElementById('mkErr');
+    var vis = document.querySelector('input[name="mkVis"]:checked').value;
+    function fail(m) { err.textContent = m; err.hidden = false; }
+    if (!name) return fail('部屋の名前を入れてください');
+    if (NG_WORDS.some(function (w) { return name.indexOf(w) >= 0; })) return fail('使えない言葉が入っています');
+    if (/\d{3,}[-\d]{6,}|@[A-Za-z0-9_.]+/.test(name)) return fail('連絡先やSNSのIDは入れられません');
+    var code = '';
+    if (vis === 'code') { var ch = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; for (var i = 0; i < 6; i++) code += ch[Math.floor(Math.random() * ch.length)]; }
+    var cat = mkSel.value;
+    var r = { id: 'mine' + ROOMS.length, t: name, cat: cat, d: vis === 'code' ? 'ルームコード ' + code : vis === 'friends' ? '友だちだけの部屋' : 'あなたが作った部屋', n: 1, mark: name.charAt(0), c: '#FF7FA8', vis: vis, code: code || undefined, mine: true, joined: true };
+    ROOMS.splice(3, 0, r); mkClose(); enterRoom(r.id);
+    if (code) setTimeout(function () { toast('ルームコード ' + code + ' を友だちに伝えよう'); }, 2300);
   });
 
   me.face = Object.assign({}, DEFAULT_FACE);
