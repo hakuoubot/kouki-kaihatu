@@ -306,7 +306,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .pk-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .pk-k { font-size: 11px; font-weight: 800; color: #8A5A00; }
 .pk-t { font-size: 17px; font-weight: 800; }
-.pk-cd { font-size: 12px; font-weight: 800; color: var(--pink-ink); background: #fff; border-radius: 999px; padding: 4px 10px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pk-cd { font-size: 12px; font-weight: 800; color: var(--pink-ink); background: #fff; border-radius: 999px; padding: 4px 10px; font-variant-numeric: tabular-nums; }
+.pk.preview { border-style: dashed; filter: saturate(0.75); }
+.pk.preview .pk-cd { color: #6A4FC4; }
 .pk-main { display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.85); border-radius: 16px; padding: 10px 12px; }
 .pk-main canvas { flex-shrink: 0; }
 .pk-badge { display: inline-block; font-size: 11px; font-weight: 800; color: #fff; background: #B8335F; border-radius: 999px; padding: 2px 10px; }
@@ -1466,13 +1468,22 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     { title: '図書館の夜', main: 5, subs: [4, 2] },
     { title: 'テスト前おうえん', main: 4, subs: [3, 2] }
   ];
-  function pickIndex() { return (Math.floor(Date.now() / (PICK_HOURS * 3600000)) + pickOffset) % PICKUPS.length; }
+  // pickIndex(): the pickup running now (used for pulls). pickOffset only previews upcoming ones.
+  function pickIndex() { return Math.floor(Date.now() / (PICK_HOURS * 3600000)) % PICKUPS.length; }
   function curPick() { return PICKUPS[pickIndex()]; }
   var pickShown = -1;
+  function hms2(sec) { return Math.floor(sec / 3600) + ':' + pad(Math.floor(sec % 3600 / 60)) + ':' + pad(sec % 60); }
+  function fmtClock(ms) { var d = new Date(ms); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + pad(d.getMinutes()); }
   function renderPickup() {
-    var i = pickIndex(), pk = PICKUPS[i];
-    var left = PICK_HOURS * 3600000 - (Date.now() % (PICK_HOURS * 3600000)), sec = Math.floor(left / 1000);
-    document.getElementById('pkCd').textContent = '入れかえまで ' + Math.floor(sec / 3600) + ':' + pad(Math.floor(sec % 3600 / 60)) + ':' + pad(sec % 60);
+    var period = PICK_HOURS * 3600000, i = (pickIndex() + pickOffset) % PICKUPS.length, pk = PICKUPS[i];
+    var curEnd = Date.now() - (Date.now() % period) + period;
+    var start = pickOffset ? curEnd + (pickOffset - 1) * period : curEnd - period, end = start + period;
+    var cd = document.getElementById('pkCd');
+    if (pickOffset) cd.textContent = 'このガチャは あと ' + hms2(Math.floor((start - Date.now()) / 1000)) + ' で開始（' + fmtClock(start) + '〜' + (new Date(start).getDate() === new Date(end).getDate() ? fmtClock(end).split(' ')[1] : fmtClock(end)) + '）';
+    else cd.textContent = 'いま開催中 ・ 終了まで ' + hms2(Math.floor((curEnd - Date.now()) / 1000));
+    document.getElementById('pkNext').textContent = pickOffset >= PICKUPS.length - 1 ? 'いまのピックアップにもどる' : '次のピックアップを見る';
+    document.getElementById('pickup').classList.toggle('preview', !!pickOffset);
+    var lbl = document.querySelector('#pickup .pk-k'); lbl.textContent = pickOffset ? 'ピックアップ予告（まだ引けません）' : 'ピックアップガチャ';
     if (pickShown === i) return;
     pickShown = i;
     var k = SKINS[pk.main];
@@ -1496,7 +1507,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     PICKUPS.forEach(function (_, j) { var e = document.createElement('i'); if (j === i) e.className = 'on'; dots.appendChild(e); });
   }
   setInterval(function () { if (st.tab === 'gacha') renderPickup(); }, 1000);
-  document.getElementById('pkNext').addEventListener('click', function () { pickOffset++; renderPickup(); toast('ピックアップが「' + curPick().title + '」に切りかわりました'); });
+  document.getElementById('pkNext').addEventListener('click', function () { pickOffset = (pickOffset + 1) % PICKUPS.length; renderPickup(); });
   function renderGacha() {
     renderPickup();
     document.getElementById('pullT').disabled = st.tickets < 1;
