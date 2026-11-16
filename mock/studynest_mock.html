@@ -428,10 +428,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
         <div class="pk-subs" id="pkSubs"></div>
         <div class="pk-foot"><div class="pk-dots" id="pkDots"></div><button type="button" class="pk-next" id="pkNext">次のピックアップを見る（デモ）</button></div>
       </div>
-      <div class="card stage">
+      <div class="card stage" id="gStage" hidden>
         <div id="gIdle">
           <div class="nm">勉強ガチャ</div>
-          <p class="note">勉強でたまるチケット、またはジェムで引けます。<br>★マークのスキンはチケットでしか出ません。<br>ジェムの購入は保護者の設定で月500円まで。</p>
         </div>
         <div id="gResult" hidden>
           <div class="rar" id="gRar"></div>
@@ -1523,6 +1522,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     if (dup) st.gems += 20; else st.owned.push(got);
     renderGacha(); updateHud();
     var stage = document.querySelector('#scr-gacha .stage');
+    stage.hidden = false;
     document.getElementById('gIdle').hidden = false; document.getElementById('gResult').hidden = true;
     document.getElementById('gIdle').querySelector('.nm').textContent = 'ガラガラ…';
     stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
