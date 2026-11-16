@@ -301,6 +301,29 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .gl-chips button { border: 2px solid var(--line); background: #fff; color: var(--muted); border-radius: 999px; padding: 6px 12px; min-height: 36px; font-size: 12px; font-weight: 800; }
 .gl-chips button[aria-pressed="true"] { border-color: var(--mint); background: #E9F7F2; color: var(--mint-ink); }
 .gl-chips button[aria-pressed="true"]::before { content: '✓ '; }
+/* gacha pickup banner */
+.pk { display: flex; flex-direction: column; gap: 10px; background: linear-gradient(160deg, #FFF4D6, #FFE3EC); border: 2px solid #FFC94D; }
+.pk-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.pk-k { font-size: 11px; font-weight: 800; color: #8A5A00; }
+.pk-t { font-size: 17px; font-weight: 800; }
+.pk-cd { font-size: 12px; font-weight: 800; color: var(--pink-ink); background: #fff; border-radius: 999px; padding: 4px 10px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pk-main { display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.85); border-radius: 16px; padding: 10px 12px; }
+.pk-main canvas { flex-shrink: 0; }
+.pk-badge { display: inline-block; font-size: 11px; font-weight: 800; color: #fff; background: #B8335F; border-radius: 999px; padding: 2px 10px; }
+.pk-badge.sub { background: #6A4FC4; }
+.pk-nm { font-size: 17px; font-weight: 800; margin-top: 4px; }
+.pk-r { font-size: 13px; font-weight: 800; }
+.pk-note { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.pk-subs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pk-sub { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.85); border-radius: 14px; padding: 8px; min-width: 0; }
+.pk-sub div { min-width: 0; }
+.pk-sub .pk-nm { font-size: 12px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pk-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pk-dots { display: flex; gap: 6px; }
+.pk-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(58, 46, 63, 0.2); }
+.pk-dots i.on { background: var(--pink); }
+#scr-gacha .stage { min-height: 170px; }
+.pk-next { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 4px 10px; min-height: 32px; font-size: 11px; font-weight: 800; color: var(--muted); }
 .fr-on { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 4px; }
 </style>
 
@@ -396,6 +419,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 
   <section class="screen" id="scr-gacha" aria-label="ガチャ" hidden>
     <div class="wrap">
+      <div class="card pk" id="pickup" aria-live="polite">
+        <div class="pk-top"><div><div class="pk-k">ピックアップガチャ</div><div class="pk-t" id="pkTitle"></div></div><span class="pk-cd" id="pkCd"></span></div>
+        <div class="pk-main">
+          <canvas id="pkAv" width="200" height="240" style="width:100px;height:120px" aria-hidden="true"></canvas>
+          <div><span class="pk-badge">目玉</span><div class="pk-nm" id="pkName"></div><div class="pk-r" id="pkRar"></div><div class="pk-note" id="pkNote"></div></div>
+        </div>
+        <div class="pk-subs" id="pkSubs"></div>
+        <div class="pk-foot"><div class="pk-dots" id="pkDots"></div><button type="button" class="pk-next" id="pkNext">次のピックアップを見る（デモ）</button></div>
+      </div>
       <div class="card stage">
         <div id="gIdle">
           <div class="nm">勉強ガチャ</div>
@@ -1428,7 +1460,46 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     var left = Math.round((ev - d) / 60000);
     document.getElementById('evLeft').textContent = left > 0 ? 'あと' + (left >= 60 ? Math.floor(left / 60) + '時間' : '') + (left % 60) + '分' : (left > -50 ? 'いま開催中' : '明日の21時');
   }
+  // pickup banners rotate every PICK_HOURS; featured x3, subs x2 easier to get
+  var PICK_HOURS = 3, pickOffset = 0;
+  var PICKUPS = [
+    { title: 'キラキラステージ', main: 6, subs: [3, 1] },
+    { title: '図書館の夜', main: 5, subs: [4, 2] },
+    { title: 'テスト前おうえん', main: 4, subs: [3, 2] }
+  ];
+  function pickIndex() { return (Math.floor(Date.now() / (PICK_HOURS * 3600000)) + pickOffset) % PICKUPS.length; }
+  function curPick() { return PICKUPS[pickIndex()]; }
+  var pickShown = -1;
+  function renderPickup() {
+    var i = pickIndex(), pk = PICKUPS[i];
+    var left = PICK_HOURS * 3600000 - (Date.now() % (PICK_HOURS * 3600000)), sec = Math.floor(left / 1000);
+    document.getElementById('pkCd').textContent = '入れかえまで ' + Math.floor(sec / 3600) + ':' + pad(Math.floor(sec % 3600 / 60)) + ':' + pad(sec % 60);
+    if (pickShown === i) return;
+    pickShown = i;
+    var k = SKINS[pk.main];
+    document.getElementById('pkTitle').textContent = pk.title;
+    document.getElementById('pkName').textContent = k.name;
+    var rr = document.getElementById('pkRar'); rr.textContent = RAR_LABEL[k.r] + ' ・ 出やすさ3倍'; rr.style.color = RAR_COLOR[k.r];
+    document.getElementById('pkNote').textContent = k.limited ? '勉強限定スキン。チケットで引いたときだけ出ます' : 'チケットでもジェムでも出ます';
+    drawPreview(document.getElementById('pkAv'), k, me.face);
+    var subs = document.getElementById('pkSubs'); subs.innerHTML = '';
+    pk.subs.forEach(function (si) {
+      var sk = SKINS[si], d = document.createElement('div'); d.className = 'pk-sub';
+      var cv = document.createElement('canvas'); cv.width = 96; cv.height = 116; cv.style.width = '48px'; cv.style.height = '58px'; cv.setAttribute('aria-hidden', 'true');
+      drawPreview(cv, sk, me.face);
+      var t = document.createElement('div');
+      t.innerHTML = '<span class="pk-badge sub">当たり</span><div class="pk-nm"></div><div class="pk-note"></div>';
+      t.querySelector('.pk-nm').textContent = sk.name;
+      t.querySelector('.pk-note').textContent = RAR_LABEL[sk.r] + ' ・ 2倍';
+      d.appendChild(cv); d.appendChild(t); subs.appendChild(d);
+    });
+    var dots = document.getElementById('pkDots'); dots.innerHTML = '';
+    PICKUPS.forEach(function (_, j) { var e = document.createElement('i'); if (j === i) e.className = 'on'; dots.appendChild(e); });
+  }
+  setInterval(function () { if (st.tab === 'gacha') renderPickup(); }, 1000);
+  document.getElementById('pkNext').addEventListener('click', function () { pickOffset++; renderPickup(); toast('ピックアップが「' + curPick().title + '」に切りかわりました'); });
   function renderGacha() {
+    renderPickup();
     document.getElementById('pullT').disabled = st.tickets < 1;
     document.getElementById('pullG').disabled = st.gems < 150;
     document.getElementById('gems').textContent = st.gems;
@@ -1444,8 +1515,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     if (useTicket ? st.tickets < 1 : st.gems < 150) return;
     if (useTicket) st.tickets -= 1; else st.gems -= 150;
     var pool = SKINS.map(function (k, i) { return i; }).filter(function (i) { return useTicket || !SKINS[i].limited; });
-    var total = pool.reduce(function (a, i) { return a + WEIGHT[SKINS[i].r]; }, 0), r = Math.random() * total, got = pool[pool.length - 1];
-    for (var j = 0; j < pool.length; j++) { r -= WEIGHT[SKINS[pool[j]].r]; if (r <= 0) { got = pool[j]; break; } }
+    var pk = curPick();
+    function wt(i) { return WEIGHT[SKINS[i].r] * (i === pk.main ? 3 : pk.subs.indexOf(i) >= 0 ? 2 : 1); }
+    var total = pool.reduce(function (a, i) { return a + wt(i); }, 0), r = Math.random() * total, got = pool[pool.length - 1];
+    for (var j = 0; j < pool.length; j++) { r -= wt(pool[j]); if (r <= 0) { got = pool[j]; break; } }
     var dup = st.owned.indexOf(got) >= 0;
     if (dup) st.gems += 20; else st.owned.push(got);
     renderGacha(); updateHud();
