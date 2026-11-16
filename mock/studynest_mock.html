@@ -287,6 +287,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .tl-item .tag { font-size: 10px; font-weight: 800; color: var(--pink-ink); background: #FFE3EC; border-radius: 999px; padding: 1px 8px; align-self: flex-start; }
 .tl-item .cheer2 { align-self: flex-start; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 4px 12px; min-height: 32px; font-size: 12px; font-weight: 800; color: var(--pink-ink); }
 .tl-item .cheer2[aria-pressed="true"] { background: var(--pink); color: #fff; border-color: var(--pink); }
+.gl-group { display: flex; flex-direction: column; gap: 6px; }
+.gl-group .gl-h { font-size: 11px; font-weight: 800; color: var(--ink); }
+.gl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.gl-chips button { border: 2px solid var(--line); background: #fff; color: var(--muted); border-radius: 999px; padding: 6px 12px; min-height: 36px; font-size: 12px; font-weight: 800; }
+.gl-chips button[aria-pressed="true"] { border-color: var(--mint); background: #E9F7F2; color: var(--mint-ink); }
+.gl-chips button[aria-pressed="true"]::before { content: '✓ '; }
 .fr-on { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 4px; }
 </style>
 
@@ -428,7 +434,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
         <label>住んでいる市町村<select id="pfTown"></select><span class="hint2">陣取りマップと地区の集計に使います。家の場所や学校名は送りません。</span></label>
         <label class="chk"><input type="checkbox" id="pfShowTown" checked><span>地域の部屋で、名前のあとに市町村を表示する</span></label>
         <label>ひとこと<input id="pfBio" type="text" maxlength="30" placeholder="例: 毎晩21時から数学やってます"></label>
-        <label>いまの目標<select id="pfGoal"></select><span class="hint2">同じ目標の人の記録を「記録」で見られます</span></label>
+        <div class="gl-wrap" style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:800;color:var(--muted)">目標（いくつでも選べます）<span id="pfGoalN"></span></span><div id="pfGoals" style="display:flex;flex-direction:column;gap:10px"></div><span class="hint2" style="font-size:11px;font-weight:700;color:var(--muted)">同じ目標の人の記録を「記録」で見られます</span></div>
         <p class="err" id="pfErr" hidden></p>
         <button type="submit" class="pull t" style="min-height:48px;font-size:14px">保存する</button>
       </form>
@@ -552,6 +558,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 
       <div id="logTl" class="wrap" style="width:100%" hidden>
         <div class="tl-goal" id="tlHead"></div>
+        <div class="cats" id="tlFilter" role="group" aria-label="目標でしぼりこむ"></div>
         <div class="tl" id="tlList"></div>
         <p class="fr-note" id="tlNote"></p>
       </div>
@@ -1458,24 +1465,49 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     b.addEventListener('click', function () { closetSeg = b.dataset.seg; renderCloset(); });
   });
   var TOWNS = ['会津若松市', '喜多方市', '北塩原村', '西会津町', '磐梯町', '猪苗代町', '会津坂下町', '湯川村', '柳津町', '三島町', '金山町', '昭和村', '会津美里町', '下郷町', '檜枝岐村', '只見町', '南会津町', '会津地方の外'];
-  var pf = { id: 'anata_2026', grade: '高校2年', town: '南会津町', showTown: true, bio: '毎晩21時から数学やってます', goal: '看護学校に合格' };
-  var GOALS = ['看護・医療系の学校に合格', '大学に合格（国公立）', '大学に合格（私立）', '専門学校に合格', '就職試験に合格', '英検2級に合格', '定期テストで学年上位', '資格・検定に合格'];
-  pf.goal = GOALS[0];
-  GOALS.forEach(function (g) { var o = document.createElement('option'); o.textContent = g; document.getElementById('pfGoal').appendChild(o); });
+  var pf = { id: 'anata_2026', grade: '高校2年', town: '南会津町', showTown: true, bio: '毎晩21時から数学やってます', goals: ['看護・医療系の受験', '定期テスト', '英検'] };
+  var GOAL_GROUPS = [
+    ['受験', ['大学受験（国公立）', '大学受験（私立）', '看護・医療系の受験', '専門学校の受験', '推薦・総合型選抜', '高校受験']],
+    ['試験勉強', ['定期テスト', '模試', '共通テスト', '小テスト・課題']],
+    ['資格・検定', ['英検', '漢検', '数検', '簿記', 'ITパスポート・情報系', 'TOEIC', 'その他の資格']],
+    ['就職・公務員', ['就職試験・SPI', '公務員試験']],
+    ['習慣・苦手克服', ['毎日勉強する習慣', '苦手科目の克服', '読書']]
+  ];
+  var GOALS = []; GOAL_GROUPS.forEach(function (g) { GOALS = GOALS.concat(g[1]); });
+  var pfDraftGoals = pf.goals.slice();
+  function renderGoalChips() {
+    var box = document.getElementById('pfGoals'); box.innerHTML = '';
+    GOAL_GROUPS.forEach(function (gr) {
+      var w = document.createElement('div'); w.className = 'gl-group';
+      var h = document.createElement('div'); h.className = 'gl-h'; h.textContent = gr[0]; w.appendChild(h);
+      var c = document.createElement('div'); c.className = 'gl-chips';
+      gr[1].forEach(function (g) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = g;
+        b.setAttribute('aria-pressed', String(pfDraftGoals.indexOf(g) >= 0));
+        b.addEventListener('click', function () {
+          var i = pfDraftGoals.indexOf(g); if (i >= 0) pfDraftGoals.splice(i, 1); else pfDraftGoals.push(g);
+          renderGoalChips();
+        });
+        c.appendChild(b);
+      });
+      w.appendChild(c); box.appendChild(w);
+    });
+    document.getElementById('pfGoalN').textContent = pfDraftGoals.length ? '　' + pfDraftGoals.length + '個えらんでいます' : '';
+  }
   var pfTownSel = document.getElementById('pfTown');
   TOWNS.forEach(function (t) { var o = document.createElement('option'); o.textContent = t; pfTownSel.appendChild(o); });
   function pfFill() {
     document.getElementById('nameIn').value = me.name; document.getElementById('pfId').value = pf.id;
     document.getElementById('pfGrade').value = pf.grade; pfTownSel.value = pf.town;
     document.getElementById('pfShowTown').checked = pf.showTown;
-    document.getElementById('pfBio').value = pf.bio; document.getElementById('pfGoal').value = pf.goal;
+    document.getElementById('pfBio').value = pf.bio; pfDraftGoals = pf.goals.slice(); renderGoalChips();
   }
   function pfShow() {
     document.getElementById('pfName').textContent = me.name;
     document.getElementById('pfIdShow').textContent = '@' + pf.id + ' ・ ' + pf.grade + ' ・ ' + pf.town;
     var b = document.getElementById('pfBioShow');
-    b.textContent = (pf.bio || '') + (pf.goal ? (pf.bio ? '\n' : '') + '目標: ' + pf.goal : '');
-    b.hidden = !pf.bio && !pf.goal;
+    b.textContent = (pf.bio || '') + (pf.goals.length ? (pf.bio ? '\n' : '') + '目標: ' + pf.goals.join('・') : '');
+    b.hidden = !pf.bio && !pf.goals.length;
     var tot = 86 * 3600 + st.sec; document.getElementById('pfTotal').textContent = Math.floor(tot / 3600) + '時間';
     document.getElementById('pfFriends').textContent = FR.filter(function (f) { return f.status === 'friend'; }).length + '人';
     document.getElementById('myId').textContent = '@' + pf.id;
@@ -1491,14 +1523,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     var err = document.getElementById('pfErr');
     function fail(m) { err.textContent = m; err.hidden = false; }
     var name = document.getElementById('nameIn').value.trim(), id = document.getElementById('pfId').value.trim().replace(/^@/, '');
-    var bio = document.getElementById('pfBio').value.trim(), goal = document.getElementById('pfGoal').value;
+    var bio = document.getElementById('pfBio').value.trim();
     if (!name) return fail('なまえを入れてください');
     if (!/^[A-Za-z0-9_]{4,15}$/.test(id)) return fail('ユーザー名は半角の英数字と _ で4〜15文字です');
     if (FR.some(function (f) { return f.id === id.toLowerCase(); })) return fail('そのユーザー名はもう使われています');
-    var bad = badText(name) || badText(bio) || badText(goal);
+    var bad = badText(name) || badText(bio);
     if (bad) return fail(bad);
     me.name = name; pf.id = id.toLowerCase(); pf.grade = document.getElementById('pfGrade').value; pf.town = pfTownSel.value;
-    pf.showTown = document.getElementById('pfShowTown').checked; pf.bio = bio; pf.goal = goal;
+    pf.showTown = document.getElementById('pfShowTown').checked; pf.bio = bio; pf.goals = pfDraftGoals.slice(); tlGoal = 'すべて';
     pfShow(); toast('プロフィールを保存しました');
   });
   document.getElementById('randomBtn').addEventListener('click', function () {
@@ -1773,28 +1805,33 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 
   // ---------- records (記録): my stats + timeline of same-goal people / friends ----------
   var GOAL_SUBJ = {
-    '看護・医療系の学校に合格': ['生物', '数学', '小論文', '面接の練習', '英語'],
-    '大学に合格（国公立）': ['数学', '英語', '物理', '古文', '共通テスト過去問'],
-    '大学に合格（私立）': ['英語', '日本史', '現代文', '過去問'],
-    '専門学校に合格': ['作文', '一般常識', '面接の練習'],
-    '就職試験に合格': ['SPI', '一般常識', '面接の練習'],
-    '英検2級に合格': ['英単語', 'リスニング', '英作文', '過去問'],
-    '定期テストで学年上位': ['数学', '英語', '化学', '世界史'],
-    '資格・検定に合格': ['簿記', '漢字検定', '情報処理']
+    '大学受験（国公立）': ['数学', '英語', '物理', '古文', '共通テスト過去問'], '大学受験（私立）': ['英語', '日本史', '現代文', '過去問'],
+    '看護・医療系の受験': ['生物', '数学', '小論文', '面接の練習'], '専門学校の受験': ['作文', '一般常識', '面接の練習'],
+    '推薦・総合型選抜': ['志望理由書', '小論文', '面接の練習'], '高校受験': ['数学', '理科', '社会', '英語'],
+    '定期テスト': ['数学', '英語', '化学', '世界史', '古文'], '模試': ['数学', '英語', '国語'], '共通テスト': ['数学IA', '英語リーディング', '国語'], '小テスト・課題': ['英単語', '漢字', '課題プリント'],
+    '英検': ['英単語', 'リスニング', '英作文', '過去問'], '漢検': ['漢字の書き取り', '過去問'], '数検': ['計算練習', '過去問'], '簿記': ['仕訳', '過去問'],
+    'ITパスポート・情報系': ['用語の暗記', '過去問'], 'TOEIC': ['リスニング', '単語'], 'その他の資格': ['テキスト', '過去問'],
+    '就職試験・SPI': ['SPI', '一般常識', '面接の練習'], '公務員試験': ['数的処理', '一般常識', '作文'],
+    '毎日勉強する習慣': ['予習', '復習', '宿題'], '苦手科目の克服': ['数学', '英語', '化学'], '読書': ['読書']
   };
   var TL_PEOPLE = [['ひなた', '会津若松市', 1], ['こはる', '喜多方市', 4], ['そうま', '会津坂下町', 0], ['あおい', '只見町', 5], ['れん', '猪苗代町', 2], ['ゆい', '会津美里町', 6], ['はると', '下郷町', 3], ['めい', '柳津町', 7]];
   var WHEN = ['いま勉強中', '12分前', '38分前', '1時間前', '2時間前', '昨日 22:10', '昨日 20:45', '昨日 19:30'];
   var cheered = {};
-  var lseg = 'me';
+  var lseg = 'me', tlGoal = 'すべて';
   function mins(m) { return m >= 60 ? Math.floor(m / 60) + '時間' + (m % 60 ? m % 60 + '分' : '') : m + '分'; }
   function seedOf(t) { var h = 0; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 9973; return h; }
   function tlItems(kind) {
-    var out = [], g = pf.goal, subj = GOAL_SUBJ[g] || ['勉強'], sd = seedOf(kind === 'goal' ? g : 'friends');
+    var out = [];
     if (kind === 'goal') {
-      for (var i = 0; i < 6; i++) {
-        var pp = TL_PEOPLE[(sd + i * 3) % TL_PEOPLE.length];
-        out.push({ key: 'g' + g + i, n: pp[0], town: pp[1], k: pp[2], m: 25 + (sd * (i + 3)) % 140, subj: subj[(sd + i) % subj.length], when: WHEN[i], goal: g, cheers: (sd + i * 7) % 9 });
-      }
+      var gs = tlGoal === 'すべて' ? pf.goals : [tlGoal], per = gs.length > 2 ? 2 : gs.length === 2 ? 3 : 5;
+      gs.forEach(function (g, gi) {
+        var subj = GOAL_SUBJ[g] || ['勉強'], sd = seedOf(g);
+        for (var i = 0; i < per; i++) {
+          var pp = TL_PEOPLE[(sd + i * 3) % TL_PEOPLE.length], wi = Math.min(WHEN.length - 1, i * gs.length + gi);
+          out.push({ key: 'g' + g + i, n: pp[0], town: pp[1], k: pp[2], m: 25 + (sd * (i + 3)) % 140, subj: subj[(sd + i) % subj.length], when: WHEN[wi], wi: wi, goal: g, cheers: (sd + i * 7) % 9 });
+        }
+      });
+      out.sort(function (a, b) { return a.wi - b.wi; });
     } else {
       FR.filter(function (f) { return f.status === 'friend'; }).forEach(function (f, i) {
         var fg = GOALS[(seedOf(f.id)) % GOALS.length], fs = GOAL_SUBJ[fg];
@@ -1802,7 +1839,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       });
     }
     if (document.getElementById('lgShare').checked && st.sec >= 60 && (kind === 'friends' || true)) {
-      out.unshift({ key: 'me', n: me.name + '（あなた）', town: pf.town, k: st.equipped, m: Math.floor(st.sec / 60), subj: '自習', when: 'さっき', goal: pf.goal, cheers: 0, mine: true });
+      out.unshift({ key: 'me', n: me.name + '（あなた）', town: pf.town, k: st.equipped, m: Math.floor(st.sec / 60), subj: '自習', when: 'さっき', goal: tlGoal === 'すべて' ? (pf.goals[0] || '') : tlGoal, cheers: 0, mine: true });
     }
     return out;
   }
@@ -1830,8 +1867,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       return;
     }
     var items = tlItems(lseg);
-    document.getElementById('tlHead').textContent = lseg === 'goal' ? '目標: ' + pf.goal : '友だちの記録';
-    document.getElementById('tlNote').textContent = lseg === 'goal' ? '目標はプロフィールで変えられます。記録をタイムラインに出している人だけが表示されます。' : '友だちの記録は、本人がタイムラインに出しているときだけ表示されます。';
+    document.getElementById('tlHead').textContent = lseg === 'goal' ? 'あなたの目標: ' + (pf.goals.length ? pf.goals.length + '個' : 'まだ選んでいません') : '友だちの記録';
+    var tf = document.getElementById('tlFilter'); tf.innerHTML = ''; tf.hidden = lseg !== 'goal' || !pf.goals.length;
+    if (pf.goals.indexOf(tlGoal) < 0) tlGoal = 'すべて';
+    ['すべて'].concat(pf.goals).forEach(function (g) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = g; b.setAttribute('aria-pressed', String(g === tlGoal));
+      b.addEventListener('click', function () { tlGoal = g; renderLog(); }); tf.appendChild(b);
+    });
+    if (lseg === 'goal' && !pf.goals.length) {
+      document.getElementById('tlList').innerHTML = '<p class="fr-empty">プロフィールで目標を選ぶと、同じ目標の人の記録が見られます</p>';
+      document.getElementById('tlNote').textContent = ''; return;
+    }
+    document.getElementById('tlNote').textContent = lseg === 'goal' ? '目標はプロフィールでいくつでも選べます。記録をタイムラインに出している人だけが表示されます。' : '友だちの記録は、本人がタイムラインに出しているときだけ表示されます。';
     var box = document.getElementById('tlList'); box.innerHTML = '';
     if (!items.length) box.innerHTML = '<p class="fr-empty">' + (lseg === 'friends' ? 'まだ友だちがいません。友だちタブから追加しよう' : 'まだ記録がありません') + '</p>';
     items.forEach(function (it) {
@@ -1842,7 +1889,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       var body = document.createElement('div'); body.className = 'body';
       var top = '<div class="top2"><span class="nm">' + esc(it.n) + '</span><span class="meta">' + esc(it.town) + ' ・ ' + esc(it.when) + '</span></div>';
       var txt = '<div class="txt">' + esc(it.subj) + 'を <b>' + mins(it.m) + '</b> 勉強' + (it.when === 'いま勉強中' ? '中' : 'しました') + '</div>';
-      var tag = lseg === 'friends' ? '<span class="tag">' + esc(it.goal) + '</span>' : '';
+      var tag = it.goal ? '<span class="tag">' + esc(it.goal) + '</span>' : '';
       body.innerHTML = top + txt + tag;
       if (!it.mine) {
         var b = document.createElement('button'); b.type = 'button'; b.className = 'cheer2';
