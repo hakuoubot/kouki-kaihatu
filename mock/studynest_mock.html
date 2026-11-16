@@ -326,6 +326,54 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .pk-dots i.on { background: var(--pink); }
 #scr-gacha .stage { min-height: 170px; }
 .pk-next { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 4px 10px; min-height: 32px; font-size: 11px; font-weight: 800; color: var(--muted); }
+/* auth (login / sign up) */
+.auth { position: absolute; inset: 0; z-index: 20; overflow-y: auto; background: linear-gradient(170deg, #FFE3EC 0%, #FFF6FA 45%, #E9F7F2 100%); padding: 32px 16px 40px; }
+.auth .wrap { max-width: 420px; }
+.au-logo { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.au-logo b { font-size: 30px; font-weight: 800; letter-spacing: 0.02em; }
+.au-logo b span { color: var(--pink-ink); }
+.au-logo small { font-size: 13px; font-weight: 800; color: var(--muted); }
+.au-form { display: flex; flex-direction: column; gap: 12px; }
+.au-form .row-chk { display: flex; flex-direction: row; align-items: flex-start; gap: 8px; color: var(--ink); font-size: 13px; background: #F8F4FA; border-radius: 12px; padding: 10px 12px; line-height: 1.5; }
+.au-form .row-chk input { margin-top: 3px; }
+.au-form a, .linkbtn { color: var(--pink-ink); font-weight: 800; }
+.linkbtn { border: 0; background: transparent; font-size: 13px; min-height: 36px; text-decoration: underline; }
+.au-step { display: flex; gap: 6px; justify-content: center; font-size: 11px; font-weight: 800; color: var(--muted); }
+.au-step span { background: #fff; border-radius: 999px; padding: 4px 10px; }
+.au-step span.on { background: var(--pink); color: #fff; }
+.au-note { font-size: 11px; color: var(--muted); line-height: 1.6; margin: 0; }
+.pf-form input[type=password] { border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 14px; font-weight: 700; color: var(--ink); background: #fff; font-family: inherit; }
+.mkbox input[type=password], .mkbox textarea { border: 2px solid var(--line); border-radius: 12px; padding: 9px 12px; font-size: 14px; font-weight: 700; color: var(--ink); background: #fff; font-family: inherit; }
+.mkbox textarea { resize: vertical; min-height: 64px; }
+.ob-bar { box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; border: 2px solid var(--pink); }
+.ob-bar .t { font-size: 16px; font-weight: 800; }
+.ob-bar .d { font-size: 12px; color: var(--muted); }
+/* study result */
+.res-big { text-align: center; font-size: 34px; font-weight: 800; color: var(--pink-ink); font-variant-numeric: tabular-nums; }
+.res-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.res-grid div { background: #FFF6FA; border-radius: 12px; padding: 8px 4px; text-align: center; }
+.res-grid b { display: block; font-size: 16px; font-variant-numeric: tabular-nums; }
+.res-grid span { font-size: 10px; color: var(--muted); font-weight: 800; }
+.res-note { font-size: 12px; color: var(--muted); text-align: center; margin: 0; }
+/* settings */
+.set-list { display: flex; flex-direction: column; background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.08); }
+.set-list > * + * { border-top: 1px solid var(--line); }
+.set-item { box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: #fff; text-align: left; padding: 14px 16px; min-height: 52px; font-size: 14px; font-weight: 800; color: var(--ink); }
+.set-item .v { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 700; }
+.set-item .chev { color: var(--muted); }
+.set-item.danger { color: #C0392B; }
+.set-item input[type=checkbox] { margin-left: auto; width: 20px; height: 20px; }
+.pf-gear { position: absolute; right: 12px; top: 12px; border: 0; background: #F3EEF6; color: var(--ink); border-radius: 999px; min-height: 36px; padding: 0 12px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
+/* shop */
+.shop-cap { display: flex; flex-direction: column; gap: 6px; }
+.shop-cap .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.shop-cap .bar div { height: 100%; background: var(--mint); border-radius: 99px; }
+.shop-item { box-sizing: border-box; display: flex; align-items: center; gap: 12px; width: 100%; border: 0; background: #fff; border-radius: 16px; padding: 12px 14px; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.08); text-align: left; min-height: 60px; }
+.shop-item .gem { width: 40px; height: 40px; border-radius: 12px; background: #E9F7F2; display: grid; place-items: center; flex-shrink: 0; }
+.shop-item .nm { font-size: 15px; font-weight: 800; flex: 1; }
+.shop-item .pr { font-size: 14px; font-weight: 800; background: var(--mint); color: #fff; border-radius: 10px; padding: 8px 12px; }
+.shop-item:disabled { opacity: 0.5; cursor: default; }
+.pill.btn { border: 0; cursor: pointer; font-family: inherit; color: var(--ink); }
 .fr-on { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 4px; }
 </style>
 
@@ -346,10 +394,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C98A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 0 8v2h18v-2a2 2 0 0 0 0-8V6H3z"></path><path d="M14 6v12" stroke-dasharray="2 2"></path></svg>
         <span id="tickets">2</span>
       </div>
-      <div class="pill" title="ジェム">
+      <button type="button" class="pill btn" id="gemPill" title="ジェムを買う" aria-label="ジェム。タップで買う">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#146E5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"></path><path d="M2 9h20"></path></svg>
         <span id="gems">300</span>
-      </div>
+      </button>
     </div>
   </header>
 
@@ -444,6 +492,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       </div>
       <button type="button" class="pull t" id="pullT">チケットで引く（1枚）</button>
       <button type="button" class="pull g" id="pullG">ジェムで引く（150）</button>
+      <button type="button" class="linkbtn" id="gachaShop" style="align-self:center">ジェムを買う</button>
       <h2 class="h">ラインナップ</h2>
       <div class="lineup" id="lineup"></div>
     </div>
@@ -451,7 +500,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 
   <section class="screen" id="scr-closet" aria-label="プロフィール" hidden>
     <div class="wrap">
-      <div class="card stage" style="min-height:0">
+      <div class="card stage" style="min-height:0;position:relative">
+        <button type="button" class="pf-gear" id="openSettings" aria-label="設定"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>設定</button>
         <canvas id="cAv" width="280" height="336" style="width:140px;height:168px" aria-hidden="true"></canvas>
         <div class="pf-name" id="pfName">あなた</div>
         <div class="pf-id" id="pfIdShow"></div>
@@ -463,7 +513,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
         </div>
         <div class="note" id="cCount"></div>
       </div>
-      <div class="seg" role="group" aria-label="プロフィールときせかえ">
+      <div class="card ob-bar" id="obBar" hidden>
+        <div class="au-step"><span>1 登録</span><span class="on">2 キャラを作る</span><span>3 はじめる</span></div>
+        <div class="t">あなたのキャラを作ろう</div>
+        <div class="d">自習室では、このキャラがあなたの代わりに座ります。あとからいつでも変えられます。</div>
+        <button type="button" class="pull t" id="obDone" style="min-height:48px;font-size:14px">これではじめる</button>
+      </div>
+      <div class="seg" id="closetSeg" role="group" aria-label="プロフィールときせかえ">
         <button type="button" data-seg="profile" aria-pressed="true">プロフィール</button>
         <button type="button" data-seg="face" aria-pressed="false">キャラ作成</button>
         <button type="button" data-seg="clothes" aria-pressed="false">ふく</button>
@@ -605,6 +661,167 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
       </div>
     </div>
   </section>
+
+  <!-- G01 login / sign up -->
+  <section class="auth" id="scr-auth" aria-label="ログイン">
+    <div class="wrap">
+      <div class="au-logo"><b>Study<span>Nest</span></b><small>地域みんなの自習室。</small></div>
+      <div class="seg" role="group" aria-label="ログインと新規登録">
+        <button type="button" data-aseg="login" aria-pressed="true">ログイン</button>
+        <button type="button" data-aseg="signup" aria-pressed="false">はじめての人</button>
+      </div>
+      <form class="card pf-form au-form" id="loginForm" autocomplete="off">
+        <label>ログインID<input id="liId" type="text" maxlength="50" value="anata_login"></label>
+        <label>パスワード<input id="liPw" type="password" maxlength="64" value="password123"></label>
+        <p class="err" id="liErr" hidden></p>
+        <button type="submit" class="pull t" style="min-height:50px;font-size:15px">ログイン</button>
+        <button type="button" class="linkbtn" id="forgotPw">パスワードを忘れたとき</button>
+        <p class="au-note" id="forgotNote" hidden>パスワードは運営でも見ることができません。アプリの「お問い合わせ」か、学校の担当の先生に連絡して、作り直しの手続きをしてください。</p>
+      </form>
+      <form class="card pf-form au-form" id="signupForm" autocomplete="off" hidden>
+        <div class="au-step"><span class="on">1 登録</span><span>2 キャラを作る</span><span>3 はじめる</span></div>
+        <label>ログインID<input id="suLogin" type="text" maxlength="50" placeholder="ログインにだけ使います"><span class="hint2">ほかの人には見えません。半角英数字で4文字以上</span></label>
+        <label>パスワード<input id="suPw" type="password" maxlength="64"><span class="hint2">8文字以上。英字と数字をまぜてください</span></label>
+        <label>パスワード（もう一度）<input id="suPw2" type="password" maxlength="64"></label>
+        <label>ユーザー名（友だち申請に使います）<input id="suUser" type="text" maxlength="15" placeholder="例: sakura_2026"><span class="hint2">ほかの人に見えます。半角の英数字と _ で4〜15文字</span></label>
+        <label>なまえ（部屋で頭の上に出ます）<input id="suName" type="text" maxlength="8" placeholder="本名は入れないでください"></label>
+        <label>学年<select id="suGrade"><option>高校1年</option><option selected>高校2年</option><option>高校3年</option><option>中学生</option><option>その他</option></select></label>
+        <label>住んでいる市町村<select id="suTown"></select><span class="hint2">陣取りマップと地区の集計に使います。住所や学校名は聞きません。</span></label>
+        <label class="row-chk"><input type="checkbox" id="suParent"><span>保護者の人に、このアプリを使うことを伝えて同意をもらいました（18歳未満の人）</span></label>
+        <label class="row-chk"><input type="checkbox" id="suTerms"><span><button type="button" class="linkbtn" style="padding:0;min-height:0" data-doc="terms">利用規約</button>と<button type="button" class="linkbtn" style="padding:0;min-height:0" data-doc="privacy">プライバシーポリシー</button>を読んで同意します</span></label>
+        <p class="err" id="suErr" hidden></p>
+        <button type="submit" class="pull t" style="min-height:50px;font-size:15px">登録して次へ</button>
+      </form>
+      <p class="au-note" style="text-align:center">モックなので、入力した内容はどこにも送られません。</p>
+    </div>
+  </section>
+
+  <!-- settings -->
+  <section class="screen" id="scr-settings" aria-label="設定" hidden>
+    <div class="wrap">
+      <button type="button" class="backbtn" id="setBack">‹ プロフィール</button>
+      <h2 class="sec">アカウント</h2>
+      <div class="set-list">
+        <div class="set-item">ログインID<span class="v" id="setLogin">anata_login</span></div>
+        <div class="set-item">ユーザー名<span class="v" id="setUser">@anata_2026</span></div>
+        <button type="button" class="set-item" id="setPw">パスワードを変える<span class="chev" style="margin-left:auto">›</span></button>
+      </div>
+      <h2 class="sec">安全</h2>
+      <div class="set-list">
+        <button type="button" class="set-item" id="setBlocks">ブロックした人<span class="v" id="setBlockN">1人</span><span class="chev">›</span></button>
+        <label class="set-item">タイムラインに自分の記録を出す<input type="checkbox" id="setShare" checked></label>
+      </div>
+      <h2 class="sec">お知らせ</h2>
+      <div class="set-list">
+        <label class="set-item">友だち申請が届いたとき<input type="checkbox" checked></label>
+        <label class="set-item">「がんばれ」が届いたとき<input type="checkbox" checked></label>
+        <label class="set-item">21時のみんなで勉強タイム<input type="checkbox" checked></label>
+      </div>
+      <h2 class="sec">このアプリについて</h2>
+      <div class="set-list">
+        <button type="button" class="set-item" data-doc="terms">利用規約<span class="chev" style="margin-left:auto">›</span></button>
+        <button type="button" class="set-item" data-doc="privacy">プライバシーポリシー<span class="chev" style="margin-left:auto">›</span></button>
+        <button type="button" class="set-item" data-doc="contact">お問い合わせ<span class="chev" style="margin-left:auto">›</span></button>
+        <div class="set-item">バージョン<span class="v">0.1（モック）</span></div>
+      </div>
+      <div class="set-list">
+        <button type="button" class="set-item" id="setLogout">ログアウト</button>
+        <button type="button" class="set-item danger" id="setDelete">退会する</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- blocked people -->
+  <section class="screen" id="scr-blocks" aria-label="ブロックした人" hidden>
+    <div class="wrap">
+      <button type="button" class="backbtn" id="blkBack">‹ 設定</button>
+      <h2 class="sec">ブロックした人</h2>
+      <p class="fr-note">ブロックした人とは、おたがいのアバター・チャット・記録が見えなくなります。相手にブロックしたことは知らされません。</p>
+      <div class="fr-list" id="blkList"></div>
+    </div>
+  </section>
+
+  <!-- gem shop -->
+  <section class="screen" id="scr-shop" aria-label="ジェムを買う" hidden>
+    <div class="wrap">
+      <button type="button" class="backbtn" id="shopBack">‹ もどる</button>
+      <div class="card shop-cap">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:16px">ジェムを買う</b><span style="font-size:13px;font-weight:800">持っているジェム <span id="shopGems">300</span></span></div>
+        <div style="font-size:12px;font-weight:800;color:var(--muted)">今月使った金額 <span id="shopUsed">0</span>円 / 上限 500円</div>
+        <div class="bar"><div id="shopBar" style="width:0%"></div></div>
+        <p class="au-note">18歳未満の人は、1か月に500円までしか買えません。ジェムがなくても、勉強してもらえるチケットでガチャは引けます。</p>
+      </div>
+      <div class="fr-list" id="shopList"></div>
+      <p class="fr-note">買ったジェムは返金できません。勉強限定スキンはジェムでは出ません。</p>
+    </div>
+  </section>
+
+  <!-- study result -->
+  <div class="mkbox" id="resBox" role="dialog" aria-label="勉強おつかれさま" hidden>
+    <h2 style="text-align:center">おつかれさま！</h2>
+    <div class="res-note">今回の勉強時間</div>
+    <div class="res-big" id="resTime">0分</div>
+    <div class="res-grid">
+      <div><b id="resTicket">+0枚</b><span>もらったチケット</span></div>
+      <div><b id="resToday">0分</b><span>今日の合計</span></div>
+      <div><b>12日</b><span>連続で勉強</span></div>
+    </div>
+    <p class="res-note" id="resNote"></p>
+    <div class="row2"><button type="button" class="no" id="resHome">ホームへ</button><button type="button" class="ok" id="resStay">部屋にもどる</button></div>
+  </div>
+
+  <!-- report -->
+  <div class="mkbox" id="repBox" role="dialog" aria-label="通報する" hidden>
+    <h2 id="repTitle">通報する</h2>
+    <fieldset>
+      <legend>どんなことがありましたか？</legend>
+      <label class="opt"><input type="radio" name="repWhy" value="abuse" checked><span>悪口・いやがらせ</span></label>
+      <label class="opt"><input type="radio" name="repWhy" value="contact"><span>連絡先やSNSを聞かれた・教えられた</span></label>
+      <label class="opt"><input type="radio" name="repWhy" value="meet"><span>会おうと言われた</span></label>
+      <label class="opt"><input type="radio" name="repWhy" value="name"><span>名前やアバターがよくない</span></label>
+      <label class="opt"><input type="radio" name="repWhy" value="spoof"><span>なりすまし</span></label>
+      <label class="opt"><input type="radio" name="repWhy" value="other"><span>その他</span></label>
+    </fieldset>
+    <label>くわしく（書かなくてもOK）<textarea id="repText" maxlength="100" placeholder="100文字まで"></textarea></label>
+    <label class="opt" style="flex-direction:row"><input type="checkbox" id="repBlock" checked><span>この人をブロックもする</span></label>
+    <p class="au-note">通報した人の名前は相手に知らされません。運営が内容とチャットの記録を確認します。</p>
+    <div class="row2"><button type="button" class="no" id="repCancel">やめる</button><button type="button" class="ok" id="repSend">通報する</button></div>
+  </div>
+
+  <!-- change password -->
+  <div class="mkbox" id="pwBox" role="dialog" aria-label="パスワードを変える" hidden>
+    <h2>パスワードを変える</h2>
+    <label>いまのパスワード<input id="pwOld" type="password" maxlength="64"></label>
+    <label>新しいパスワード<input id="pwNew" type="password" maxlength="64"></label>
+    <label>新しいパスワード（もう一度）<input id="pwNew2" type="password" maxlength="64"></label>
+    <p class="err" id="pwErr" hidden></p>
+    <div class="row2"><button type="button" class="no" id="pwCancel">やめる</button><button type="button" class="ok" id="pwOk">変える</button></div>
+  </div>
+
+  <!-- delete account -->
+  <div class="mkbox" id="delBox" role="dialog" aria-label="退会する" hidden>
+    <h2>退会する</h2>
+    <p class="au-note" style="font-size:13px;color:var(--ink)">退会すると、きせかえ・チケット・ジェム・友だちがすべて消えて、もとに戻せません。勉強した時間は、だれのものか分からない形にして地区の集計にだけ残ります。</p>
+    <label>パスワード<input id="delPw" type="password" maxlength="64"></label>
+    <label class="opt" style="flex-direction:row"><input type="checkbox" id="delOk"><span>消えることを分かったうえで退会します</span></label>
+    <p class="err" id="delErr" hidden></p>
+    <div class="row2"><button type="button" class="no" id="delCancel">やめる</button><button type="button" class="ok" id="delGo" style="background:#C0392B">退会する</button></div>
+  </div>
+
+  <!-- buy confirm -->
+  <div class="mkbox" id="buyBox" role="dialog" aria-label="購入の確認" hidden>
+    <h2>購入の確認</h2>
+    <p style="margin:0;font-size:15px;font-weight:800" id="buyWhat"></p>
+    <p class="au-note">お店（App Store / Google Play、Webはカード決済）の画面に進みます。モックなので実際には買えません。</p>
+    <div class="row2"><button type="button" class="no" id="buyCancel">やめる</button><button type="button" class="ok" id="buyOk">買う</button></div>
+  </div>
+
+  <!-- docs (terms etc.) -->
+  <div class="mkbox" id="docBox" role="dialog" aria-label="文書" hidden style="z-index:25">
+    <h2 id="docTitle"></h2>
+    <p class="au-note" style="font-size:13px;color:var(--ink)" id="docBody"></p>
+    <div class="row2"><button type="button" class="ok" id="docClose">とじる</button></div>
+  </div>
 
   <nav class="tabs" aria-label="メニュー">
     <button type="button" data-tab="home" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>ホーム</button>
@@ -1222,6 +1439,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     document.getElementById('tickets').textContent = st.tickets;
     document.getElementById('gems').textContent = st.gems;
     var on = !!me.seat, el = document.getElementById('state');
+    if (on && st.sitSec == null) st.sitSec = st.sec;
     el.textContent = on ? '着席中・タイマー作動中' : '光っているイスに座ろう';
     el.className = 'state' + (on ? ' on' : '');
     document.getElementById('standBtn').hidden = !on;
@@ -1233,7 +1451,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     updateHud();
   }
   document.getElementById('skipBtn').addEventListener('click', function () { if (!me.seat) { toast('座っている間だけ勉強時間になります'); return; } addStudy(TICKET_SEC); });
-  document.getElementById('standBtn').addEventListener('click', function () { standUp(me); });
+  document.getElementById('standBtn').addEventListener('click', function () { finishStudy(); });
   var presetsEl = document.getElementById('presets');
   PRESETS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.addEventListener('click', function () { me.msg = t; }); presetsEl.appendChild(b); });
   document.getElementById('say').addEventListener('submit', function (e) { e.preventDefault(); var i = document.getElementById('chatIn'), t = i.value.trim(); if (!t) return; t = t.replace(/\d[\d-]{8,}\d/g, '＊＊＊').replace(/@[A-Za-z0-9_.]+/g, '＊＊＊'); me.msg = t; i.value = ''; });
@@ -1323,10 +1541,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   document.getElementById('actBlock').addEventListener('click', function () {
     var p = actP; closeAct(); if (!p) return;
     if (p.seat) p.seat.who = null;
-    people = people.filter(function (q) { return q !== p; });
+    blockPerson(p);
     toast(p.name + 'さんをブロックしました。おたがいに見えなくなります');
   });
-  document.getElementById('actReport').addEventListener('click', function () { var p = actP; closeAct(); if (p) toast('通報しました。運営が内容を確認します'); });
+  document.getElementById('actReport').addEventListener('click', function () { var p = actP; closeAct(); if (p) openReport(p); });
   canvas.addEventListener('pointerup', function (e) {
     if (actP) { closeAct(); return; }
     var r = canvas.getBoundingClientRect(), w = toWorld(e.clientX - r.left, e.clientY - r.top);
@@ -1433,18 +1651,22 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   var LOCKED = { body: '#E6DCEB', hair: '#CFC3D8' };
   function showTab(tab) {
     st.tab = tab;
-    ['home', 'gacha', 'closet', 'friends', 'log'].forEach(function (t) { document.getElementById('scr-' + t).hidden = t !== tab; });
+    ['resBox', 'repBox', 'pwBox', 'delBox', 'buyBox', 'mkBox', 'docBox', 'qBox', 'act'].forEach(function (id) { var d = document.getElementById(id); if (d) d.hidden = true; });
+    ['home', 'gacha', 'closet', 'friends', 'log', 'settings', 'blocks', 'shop'].forEach(function (t) { document.getElementById('scr-' + t).hidden = t !== tab; });
     document.getElementById('scr-rooms').hidden = !(tab === 'room' && !st.inRoom);
     var inRoom = tab === 'room' && st.inRoom;
     document.getElementById('roomHud').hidden = !inRoom;
     document.getElementById('roomsBar').hidden = !inRoom;
     document.getElementById('nearPill').hidden = !inRoom;
-    document.querySelectorAll('.tabs button').forEach(function (b) { if (b.dataset.tab === (tab === 'log' ? 'home' : tab)) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    document.querySelectorAll('.tabs button').forEach(function (b) { if (b.dataset.tab === ({ log: 'home', settings: 'closet', blocks: 'closet', shop: shopFrom }[tab] || tab)) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     if (tab === 'home') renderHome();
     if (tab === 'closet') renderCloset();
     if (tab === 'gacha') renderGacha();
     if (tab === 'friends') renderFriends();
     if (tab === 'log') renderLog();
+    if (tab === 'settings') renderSettings();
+    if (tab === 'blocks') renderBlocks();
+    if (tab === 'shop') renderShop();
     if (tab === 'room' && !st.inRoom) renderLobby();
   }
   document.querySelectorAll('.tabs button').forEach(function (b) { b.addEventListener('click', function () { showTab(b.dataset.tab); }); });
@@ -2009,8 +2231,204 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   document.getElementById('chatMin').addEventListener('click', function (e) { e.stopPropagation(); setChatMin(!document.getElementById('say').classList.contains('min')); });
   document.getElementById('say').addEventListener('click', function () { if (this.classList.contains('min')) setChatMin(false); });
 
+  // ---------- G01 login / sign up + first-time character ----------
+  var acct = { login: 'anata_login', pw: 'password123' };
+  var suTown = document.getElementById('suTown');
+  TOWNS.forEach(function (t) { var o = document.createElement('option'); o.textContent = t; suTown.appendChild(o); });
+  suTown.value = '南会津町';
+  function setAseg(v) {
+    document.querySelectorAll('[data-aseg]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.aseg === v)); });
+    document.getElementById('loginForm').hidden = v !== 'login';
+    document.getElementById('signupForm').hidden = v !== 'signup';
+  }
+  document.querySelectorAll('[data-aseg]').forEach(function (b) { b.addEventListener('click', function () { setAseg(b.dataset.aseg); }); });
+  function showAuth() { document.getElementById('scr-auth').hidden = false; document.getElementById('scr-auth').scrollTop = 0; setAseg('login'); }
+  function hideAuth() { document.getElementById('scr-auth').hidden = true; }
+  document.getElementById('forgotPw').addEventListener('click', function () { var n = document.getElementById('forgotNote'); n.hidden = !n.hidden; });
+  ['loginForm', 'signupForm'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { document.getElementById(id === 'loginForm' ? 'liErr' : 'suErr').hidden = true; }); });
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = document.getElementById('liErr'), id = document.getElementById('liId').value.trim(), pw = document.getElementById('liPw').value;
+    if (!id || !pw) { err.textContent = 'ログインIDとパスワードを入れてください'; err.hidden = false; return; }
+    if (id !== acct.login || pw !== acct.pw) { err.textContent = 'ログインIDかパスワードがちがいます（5回まちがえると15分ロックされます）'; err.hidden = false; return; }
+    hideAuth(); showTab('home'); toast('おかえりなさい、' + me.name + 'さん');
+  });
+  document.getElementById('signupForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = document.getElementById('suErr');
+    function fail(m) { err.textContent = m; err.hidden = false; }
+    var lid = document.getElementById('suLogin').value.trim(), pw = document.getElementById('suPw').value, pw2 = document.getElementById('suPw2').value;
+    var user = document.getElementById('suUser').value.trim().replace(/^@/, ''), name = document.getElementById('suName').value.trim();
+    if (!/^[A-Za-z0-9_]{4,50}$/.test(lid)) return fail('ログインIDは半角英数字で4文字以上です');
+    if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return fail('パスワードは8文字以上で、英字と数字をまぜてください');
+    if (pw !== pw2) return fail('パスワードが一致しません');
+    if (pw === lid) return fail('ログインIDと同じパスワードは使えません');
+    if (!/^[A-Za-z0-9_]{4,15}$/.test(user)) return fail('ユーザー名は半角の英数字と _ で4〜15文字です');
+    if (user.toLowerCase() === lid.toLowerCase()) return fail('ユーザー名はログインIDと別のものにしてください');
+    if (FR.some(function (f) { return f.id === user.toLowerCase(); })) return fail('そのユーザー名はもう使われています');
+    if (!name) return fail('なまえを入れてください');
+    var bad = badText(name); if (bad) return fail(bad);
+    var grade = document.getElementById('suGrade').value;
+    if (grade !== 'その他' && !document.getElementById('suParent').checked) return fail('保護者の人の同意にチェックしてください');
+    if (!document.getElementById('suTerms').checked) return fail('利用規約とプライバシーポリシーへの同意が必要です');
+    acct = { login: lid, pw: pw };
+    me.name = name; pf.id = user.toLowerCase(); pf.grade = grade; pf.town = suTown.value; pf.bio = ''; pf.goals = []; pfFilled = false;
+    st.tickets = 1; st.gems = 0; st.owned = [0]; st.equipped = 0; me.skin = SKINS[0]; me.face = Object.assign({}, DEFAULT_FACE);
+    FR.forEach(function (f) { if (f.status === 'friend') f.status = 'none'; });
+    updateHud();
+    hideAuth(); startOnboarding();
+  });
+  var onboarding = false;
+  function startOnboarding() {
+    onboarding = true; closetSeg = 'face'; curCat = 'hair';
+    document.getElementById('obBar').hidden = false; document.getElementById('closetSeg').hidden = true;
+    document.querySelector('.tabs').hidden = true; document.querySelector('#scr-closet .pf-stats').hidden = true;
+    showTab('closet'); document.getElementById('scr-closet').scrollTop = 0;
+  }
+  document.getElementById('obDone').addEventListener('click', function () {
+    onboarding = false;
+    document.getElementById('obBar').hidden = true; document.getElementById('closetSeg').hidden = false;
+    document.querySelector('.tabs').hidden = false; document.querySelector('#scr-closet .pf-stats').hidden = false; closetSeg = 'profile';
+    showTab('home'); toast('ようこそ！ まずは「自習室をえらぶ」から部屋に入ってみよう');
+  });
+
+  // docs (terms / privacy / contact)
+  var DOCS = {
+    terms: ['利用規約（ようやく）', 'StudyNest は、地域の高校生がいっしょに勉強するためのアプリです。・ほかの人の悪口、連絡先の交換、会う約束はしません。・本名や学校名、住所は書きません。・ルールを守らない人は、使えなくなることがあります。（本番では正式な規約を入れます）'],
+    privacy: ['プライバシーポリシー（ようやく）', '集めるもの: ログインID、ユーザー名、なまえ、学年、市町村、勉強した時間、チャット、ワンタップ調査の答え。市や町に返すのは、市町村ごとに集計した数だけで、5人未満の町は出しません。住所や学校名、位置情報は集めません。（本番では正式な文書を入れます）'],
+    contact: ['お問い合わせ', 'こまったこと、まちがい、パスワードを忘れたときは、ここから運営に連絡できます。（本番では問い合わせフォームを入れます）']
+  };
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-doc]'); if (!b) return;
+    e.preventDefault(); var d = DOCS[b.dataset.doc];
+    document.getElementById('docTitle').textContent = d[0]; document.getElementById('docBody').textContent = d[1];
+    document.getElementById('docBox').hidden = false;
+  });
+  document.getElementById('docClose').addEventListener('click', function () { document.getElementById('docBox').hidden = true; });
+
+  // ---------- study result ----------
+  function fmtMin(sec) { var m = Math.floor(sec / 60); return m >= 60 ? Math.floor(m / 60) + '時間' + (m % 60) + '分' : m + '分'; }
+  function finishStudy() {
+    var from = st.sitSec == null ? st.sec : st.sitSec, got = st.sec - from;
+    var tk = Math.floor(st.sec / TICKET_SEC) - Math.floor(from / TICKET_SEC);
+    standUp(me); st.sitSec = null;
+    document.getElementById('resTime').textContent = got < 60 ? '1分未満' : fmtMin(got);
+    document.getElementById('resTicket').textContent = '+' + tk + '枚';
+    document.getElementById('resToday').textContent = fmtMin(4320 + st.sec);
+    document.getElementById('resNote').textContent = got < 60 ? '1分未満の勉強は記録されません' : tk ? 'ガチャでチケットを使えます' : '次のチケットまで、あと' + Math.ceil((TICKET_SEC - st.sec % TICKET_SEC) / 60) + '分';
+    document.getElementById('resBox').hidden = false;
+  }
+  document.getElementById('resStay').addEventListener('click', function () { document.getElementById('resBox').hidden = true; });
+  document.getElementById('resHome').addEventListener('click', function () { document.getElementById('resBox').hidden = true; st.inRoom = false; showTab('home'); });
+
+  // ---------- report ----------
+  var repP = null;
+  function openReport(p) {
+    repP = p; document.getElementById('repTitle').textContent = p.name.split('(')[0] + 'さんを通報する';
+    document.getElementById('repText').value = ''; document.getElementById('repBlock').checked = true;
+    document.querySelector('input[name="repWhy"][value="abuse"]').checked = true;
+    document.getElementById('repBox').hidden = false;
+  }
+  document.getElementById('repCancel').addEventListener('click', function () { document.getElementById('repBox').hidden = true; });
+  document.getElementById('repSend').addEventListener('click', function () {
+    var p = repP; document.getElementById('repBox').hidden = true; if (!p) return;
+    if (document.getElementById('repBlock').checked) { blockPerson(p); toast('通報してブロックしました。運営が確認します'); }
+    else toast('通報しました。運営が内容を確認します');
+  });
+
+  // ---------- block list ----------
+  var BLOCKED = [{ n: 'たろう', town: '喜多方市', k: 3, when: '11/10' }];
+  function blockPerson(p) {
+    if (p.seat) p.seat.who = null;
+    people = people.filter(function (q) { return q !== p; });
+    var n = p.name.split('(')[0];
+    if (!BLOCKED.some(function (b) { return b.n === n; })) BLOCKED.unshift({ n: n, town: (p.name.split('(')[1] || '').replace(')', '') || '全国の部屋', k: p.k || 0, when: '今日' });
+  }
+  function renderBlocks() {
+    var box = document.getElementById('blkList'); box.innerHTML = '';
+    if (!BLOCKED.length) { box.innerHTML = '<p class="fr-empty">ブロックしている人はいません</p>'; return; }
+    BLOCKED.forEach(function (b, i) {
+      var row = document.createElement('div'); row.className = 'fr-row';
+      var cv = document.createElement('canvas'); cv.width = 88; cv.height = 88; cv.setAttribute('aria-hidden', 'true');
+      drawPreview(cv, SKINS[b.k % SKINS.length], faceFor(7 + i * 5, HAIR_COLORS[i % HAIR_COLORS.length]), true);
+      var who = document.createElement('div'); who.className = 'who';
+      who.innerHTML = '<div class="nm"></div><div class="meta"></div>';
+      who.querySelector('.nm').textContent = b.n; who.querySelector('.meta').textContent = b.town + ' ・ ' + b.when + 'にブロック';
+      var btns = document.createElement('div'); btns.className = 'btns';
+      var un = document.createElement('button'); un.type = 'button'; un.className = 'fr-btn sub'; un.textContent = '解除';
+      un.addEventListener('click', function () { BLOCKED.splice(i, 1); renderBlocks(); toast(b.n + 'さんのブロックを解除しました'); });
+      btns.appendChild(un); row.appendChild(cv); row.appendChild(who); row.appendChild(btns); box.appendChild(row);
+    });
+  }
+  document.getElementById('blkBack').addEventListener('click', function () { showTab('settings'); });
+
+  // ---------- settings ----------
+  function renderSettings() {
+    document.getElementById('setLogin').textContent = acct.login;
+    document.getElementById('setUser').textContent = '@' + pf.id;
+    document.getElementById('setBlockN').textContent = BLOCKED.length + '人';
+    document.getElementById('setShare').checked = document.getElementById('lgShare').checked;
+  }
+  document.getElementById('openSettings').addEventListener('click', function () { showTab('settings'); document.getElementById('scr-settings').scrollTop = 0; });
+  document.getElementById('setBack').addEventListener('click', function () { showTab('closet'); });
+  document.getElementById('setBlocks').addEventListener('click', function () { showTab('blocks'); });
+  document.getElementById('setShare').addEventListener('change', function (e) { document.getElementById('lgShare').checked = e.target.checked; toast(e.target.checked ? '記録をタイムラインに出します' : '記録をタイムラインに出しません'); });
+  function openBox(id) { document.getElementById(id).querySelectorAll('input[type=password]').forEach(function (i) { i.value = ''; }); var er = document.getElementById(id).querySelector('.err'); if (er) er.hidden = true; document.getElementById(id).hidden = false; }
+  document.getElementById('setPw').addEventListener('click', function () { openBox('pwBox'); });
+  document.getElementById('pwCancel').addEventListener('click', function () { document.getElementById('pwBox').hidden = true; });
+  document.getElementById('pwOk').addEventListener('click', function () {
+    var err = document.getElementById('pwErr'), o = document.getElementById('pwOld').value, n = document.getElementById('pwNew').value, n2 = document.getElementById('pwNew2').value;
+    function fail(m) { err.textContent = m; err.hidden = false; }
+    if (o !== acct.pw) return fail('いまのパスワードがちがいます');
+    if (n.length < 8 || !/[A-Za-z]/.test(n) || !/\d/.test(n)) return fail('新しいパスワードは8文字以上で、英字と数字をまぜてください');
+    if (n !== n2) return fail('新しいパスワードが一致しません');
+    acct.pw = n; document.getElementById('pwBox').hidden = true; toast('パスワードを変えました');
+  });
+  document.getElementById('setLogout').addEventListener('click', function () {
+    if (me.seat) standUp(me); st.inRoom = false;
+    document.getElementById('liId').value = acct.login; document.getElementById('liPw').value = '';
+    showAuth(); toast('ログアウトしました');
+  });
+  document.getElementById('setDelete').addEventListener('click', function () { document.getElementById('delOk').checked = false; openBox('delBox'); });
+  document.getElementById('delCancel').addEventListener('click', function () { document.getElementById('delBox').hidden = true; });
+  document.getElementById('delGo').addEventListener('click', function () {
+    var err = document.getElementById('delErr');
+    if (document.getElementById('delPw').value !== acct.pw) { err.textContent = 'パスワードがちがいます'; err.hidden = false; return; }
+    if (!document.getElementById('delOk').checked) { err.textContent = '確認のチェックを入れてください'; err.hidden = false; return; }
+    document.getElementById('delBox').hidden = true;
+    document.getElementById('liId').value = ''; document.getElementById('liPw').value = '';
+    showAuth(); toast('退会しました。いままでありがとう');
+  });
+
+  // ---------- gem shop ----------
+  var SHOP = [{ g: 100, yen: 120 }, { g: 250, yen: 240 }, { g: 500, yen: 480 }], shopUsed = 0, shopFrom = 'gacha', buyItem = null;
+  function openShop() { shopFrom = st.tab === 'room' ? 'room' : st.tab === 'closet' ? 'closet' : st.tab === 'home' ? 'home' : 'gacha'; shopBackTo = st.tab; showTab('shop'); document.getElementById('scr-shop').scrollTop = 0; }
+  var shopBackTo = 'gacha';
+  function renderShop() {
+    document.getElementById('shopGems').textContent = st.gems;
+    document.getElementById('shopUsed').textContent = shopUsed;
+    document.getElementById('shopBar').style.width = Math.min(100, shopUsed / 500 * 100) + '%';
+    var box = document.getElementById('shopList'); box.innerHTML = '';
+    SHOP.forEach(function (it) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'shop-item';
+      var over = shopUsed + it.yen > 500;
+      b.disabled = over;
+      b.innerHTML = '<span class="gem"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#146E5B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"></path><path d="M2 9h20"></path></svg></span><span class="nm">' + it.g + ' ジェム' + (over ? '<br><small style="font-size:11px;color:var(--muted)">今月の上限をこえるので買えません</small>' : '') + '</span><span class="pr">' + it.yen + '円</span>';
+      b.addEventListener('click', function () { buyItem = it; document.getElementById('buyWhat').textContent = it.g + ' ジェムを ' + it.yen + '円で買いますか？'; document.getElementById('buyBox').hidden = false; });
+      box.appendChild(b);
+    });
+  }
+  document.getElementById('gemPill').addEventListener('click', openShop);
+  document.getElementById('gachaShop').addEventListener('click', openShop);
+  document.getElementById('shopBack').addEventListener('click', function () { showTab(shopBackTo === 'shop' ? 'gacha' : shopBackTo); });
+  document.getElementById('buyCancel').addEventListener('click', function () { document.getElementById('buyBox').hidden = true; });
+  document.getElementById('buyOk').addEventListener('click', function () {
+    var it = buyItem; document.getElementById('buyBox').hidden = true; if (!it) return;
+    shopUsed += it.yen; st.gems += it.g; updateHud(); renderShop(); toast(it.g + 'ジェムを買いました（デモ）');
+  });
+
   me.face = Object.assign({}, DEFAULT_FACE);
-  loadRoom('region'); updateHud(); showTab('home');
+  loadRoom('region'); updateHud(); showTab('home'); showAuth();
   camX = P(me.px, me.py)[0]; camY = P(me.px, me.py)[1] - 30;
   requestAnimationFrame(frame);
 })();
