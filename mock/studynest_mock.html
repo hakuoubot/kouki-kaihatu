@@ -87,6 +87,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
 }
 .tabs button { border: 0; background: transparent; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 800; min-height: 54px; border-radius: 14px; }
+@media (max-width: 420px) { .tabs button { font-size: 10px; white-space: nowrap; letter-spacing: -0.02em; } }
 .tabs button[aria-current="page"] { color: var(--pink-ink); background: #FFE3EC; }
 
 /* full screens (home / gacha / closet) */
@@ -239,6 +240,21 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .mkbox .row2 button { flex: 1; border: 0; border-radius: 14px; min-height: 46px; font-weight: 800; font-size: 14px; }
 .mkbox .row2 .ok { background: var(--pink); color: #fff; }
 .mkbox .row2 .no { background: #F3EEF6; }
+/* profile */
+.pf-name { font-size: 20px; font-weight: 800; }
+.pf-id { font-size: 12px; color: var(--muted); font-weight: 700; }
+.pf-bio { font-size: 13px; line-height: 1.6; background: #F8F4FA; border-radius: 12px; padding: 8px 12px; max-width: 100%; white-space: pre-line; }
+.pf-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; }
+.pf-stats div { background: #FFF6FA; border-radius: 12px; padding: 8px 4px; text-align: center; }
+.pf-stats b { display: block; font-size: 16px; font-variant-numeric: tabular-nums; }
+.pf-stats span { font-size: 10px; color: var(--muted); font-weight: 800; }
+.pf-form { display: flex; flex-direction: column; gap: 12px; }
+.pf-form label { font-size: 12px; font-weight: 800; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.pf-form input[type=text], .pf-form select { border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 14px; font-weight: 700; color: var(--ink); background: #fff; font-family: inherit; }
+.pf-form input:focus, .pf-form select:focus { border-color: var(--pink); outline: 0; }
+.pf-form .hint2 { font-size: 11px; font-weight: 700; color: var(--muted); }
+.pf-form .chk { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-size: 13px; background: #F8F4FA; border-radius: 12px; padding: 10px 12px; }
+.pf-form .err { font-size: 12px; color: #C0392B; font-weight: 800; margin: 0; }
 .fr-on { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 4px; }
 </style>
 
@@ -353,18 +369,37 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     </div>
   </section>
 
-  <section class="screen" id="scr-closet" aria-label="きせかえ" hidden>
+  <section class="screen" id="scr-closet" aria-label="プロフィール" hidden>
     <div class="wrap">
       <div class="card stage" style="min-height:0">
         <canvas id="cAv" width="280" height="336" style="width:140px;height:168px" aria-hidden="true"></canvas>
-        <div class="namerow"><label for="nameIn">なまえ</label><input id="nameIn" type="text" maxlength="8" value="あなた" autocomplete="off"></div>
+        <div class="pf-name" id="pfName">あなた</div>
+        <div class="pf-id" id="pfIdShow"></div>
+        <div class="pf-bio" id="pfBioShow"></div>
+        <div class="pf-stats">
+          <div><b id="pfTotal">86時間</b><span>これまでの勉強</span></div>
+          <div><b>12日</b><span>連続で勉強</span></div>
+          <div><b id="pfFriends">2人</b><span>友だち</span></div>
+        </div>
         <div class="note" id="cCount"></div>
       </div>
-      <div class="seg" role="group" aria-label="きせかえの種類">
-        <button type="button" data-seg="face" aria-pressed="true">キャラ作成</button>
+      <div class="seg" role="group" aria-label="プロフィールときせかえ">
+        <button type="button" data-seg="profile" aria-pressed="true">プロフィール</button>
+        <button type="button" data-seg="face" aria-pressed="false">キャラ作成</button>
         <button type="button" data-seg="clothes" aria-pressed="false">ふく</button>
       </div>
-      <div id="facePane" class="wrap" style="gap:10px;width:100%">
+      <form id="profilePane" class="card pf-form" autocomplete="off">
+        <label>なまえ（部屋で頭の上に出ます）<input id="nameIn" type="text" maxlength="8" value="あなた"></label>
+        <label>ユーザー名（友だち申請に使います）<input id="pfId" type="text" maxlength="15" value="anata_2026"><span class="hint2">半角の英数字と _ で4〜15文字</span></label>
+        <label>学年<select id="pfGrade"><option>高校1年</option><option selected>高校2年</option><option>高校3年</option><option>中学生</option><option>その他</option></select></label>
+        <label>住んでいる市町村<select id="pfTown"></select><span class="hint2">陣取りマップと地区の集計に使います。家の場所や学校名は送りません。</span></label>
+        <label class="chk"><input type="checkbox" id="pfShowTown" checked><span>地域の部屋で、名前のあとに市町村を表示する</span></label>
+        <label>ひとこと<input id="pfBio" type="text" maxlength="30" placeholder="例: 毎晩21時から数学やってます"></label>
+        <label>いまの目標<input id="pfGoal" type="text" maxlength="20" placeholder="例: 英検2級に合格"></label>
+        <p class="err" id="pfErr" hidden></p>
+        <button type="submit" class="pull t" style="min-height:48px;font-size:14px">保存する</button>
+      </form>
+      <div id="facePane" class="wrap" style="gap:10px;width:100%" hidden>
         <div class="cats" id="cats" role="group" aria-label="パーツ"></div>
         <div class="opts" id="opts"></div>
         <button type="button" class="pull t" id="randomBtn" style="min-height:48px;font-size:14px">おまかせで作る</button>
@@ -457,7 +492,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     <button type="button" data-tab="room"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16"></path><path d="M6 19v-6h12v6"></path><path d="M9 13V8h6v5"></path><path d="M12 5v3"></path></svg>自習室</button>
     <button type="button" data-tab="gacha"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"></circle><path d="M6 9h12"></path><path d="M8 15l-1 6h10l-1-6"></path></svg>ガチャ</button>
     <button type="button" data-tab="friends"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M17 14.5a5 5 0 0 1 4.5 5"></path></svg>友だち</button>
-    <button type="button" data-tab="closet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4l3 2 3-2 5 3-2 4-2-1v10H8V10l-2 1-2-4z"></path></svg>きせかえ</button>
+    <button type="button" data-tab="closet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>プロフィール</button>
   </nav>
 </div>
 
@@ -1345,12 +1380,52 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   document.getElementById('pullT').addEventListener('click', function () { pull(true); });
   document.getElementById('pullG').addEventListener('click', function () { pull(false); });
   var CATS = [['hair', 'かみがた'], ['hairColor', 'かみの色'], ['eye', 'め'], ['eyeColor', 'めの色'], ['brow', 'まゆ'], ['mouth', 'くち'], ['skinTone', 'はだの色'], ['cheek', 'ほっぺ'], ['glasses', 'めがね']];
-  var closetSeg = 'face', curCat = 'hair';
+  var closetSeg = 'profile', curCat = 'hair';
   var LOCKED_FACE = Object.assign({}, DEFAULT_FACE, { hairColor: '#CFC3D8', skinColor: '#F2ECF4', eye: 'dot', mouth: 'small', cheek: 'none' });
   document.querySelectorAll('[data-seg]').forEach(function (b) {
     b.addEventListener('click', function () { closetSeg = b.dataset.seg; renderCloset(); });
   });
-  document.getElementById('nameIn').addEventListener('input', function (e) { me.name = e.target.value.trim() || 'あなた'; });
+  var TOWNS = ['会津若松市', '喜多方市', '北塩原村', '西会津町', '磐梯町', '猪苗代町', '会津坂下町', '湯川村', '柳津町', '三島町', '金山町', '昭和村', '会津美里町', '下郷町', '檜枝岐村', '只見町', '南会津町', '会津地方の外'];
+  var pf = { id: 'anata_2026', grade: '高校2年', town: '南会津町', showTown: true, bio: '毎晩21時から数学やってます', goal: '看護学校に合格' };
+  var pfTownSel = document.getElementById('pfTown');
+  TOWNS.forEach(function (t) { var o = document.createElement('option'); o.textContent = t; pfTownSel.appendChild(o); });
+  function pfFill() {
+    document.getElementById('nameIn').value = me.name; document.getElementById('pfId').value = pf.id;
+    document.getElementById('pfGrade').value = pf.grade; pfTownSel.value = pf.town;
+    document.getElementById('pfShowTown').checked = pf.showTown;
+    document.getElementById('pfBio').value = pf.bio; document.getElementById('pfGoal').value = pf.goal;
+  }
+  function pfShow() {
+    document.getElementById('pfName').textContent = me.name;
+    document.getElementById('pfIdShow').textContent = '@' + pf.id + ' ・ ' + pf.grade + ' ・ ' + pf.town;
+    var b = document.getElementById('pfBioShow');
+    b.textContent = (pf.bio || '') + (pf.goal ? (pf.bio ? '\n' : '') + '目標: ' + pf.goal : '');
+    b.hidden = !pf.bio && !pf.goal;
+    var tot = 86 * 3600 + st.sec; document.getElementById('pfTotal').textContent = Math.floor(tot / 3600) + '時間';
+    document.getElementById('pfFriends').textContent = FR.filter(function (f) { return f.status === 'friend'; }).length + '人';
+    document.getElementById('myId').textContent = '@' + pf.id;
+  }
+  function badText(t) {
+    if (/死ね|しね|バカ|ばか|きもい|うざい/.test(t)) return '使えない言葉が入っています';
+    if (/\d[\d-]{8,}\d|[０-９]{10,}|@[A-Za-z0-9_.]+|[A-Za-z0-9._%+-]+@|line|insta|インスタ/i.test(t)) return '連絡先やSNSのIDは入れられません';
+    return '';
+  }
+  document.getElementById('profilePane').addEventListener('input', function () { document.getElementById('pfErr').hidden = true; });
+  document.getElementById('profilePane').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = document.getElementById('pfErr');
+    function fail(m) { err.textContent = m; err.hidden = false; }
+    var name = document.getElementById('nameIn').value.trim(), id = document.getElementById('pfId').value.trim().replace(/^@/, '');
+    var bio = document.getElementById('pfBio').value.trim(), goal = document.getElementById('pfGoal').value.trim();
+    if (!name) return fail('なまえを入れてください');
+    if (!/^[A-Za-z0-9_]{4,15}$/.test(id)) return fail('ユーザー名は半角の英数字と _ で4〜15文字です');
+    if (FR.some(function (f) { return f.id === id.toLowerCase(); })) return fail('そのユーザー名はもう使われています');
+    var bad = badText(name) || badText(bio) || badText(goal);
+    if (bad) return fail(bad);
+    me.name = name; pf.id = id.toLowerCase(); pf.grade = document.getElementById('pfGrade').value; pf.town = pfTownSel.value;
+    pf.showTown = document.getElementById('pfShowTown').checked; pf.bio = bio; pf.goal = goal;
+    pfShow(); toast('プロフィールを保存しました');
+  });
   document.getElementById('randomBtn').addEventListener('click', function () {
     function r(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
     me.face = { hair: r(PARTS.hair)[0], hairColor: r(HAIR_COLORS), eye: r(PARTS.eye)[0], eyeColor: r(EYE_COLORS), brow: r(PARTS.brow)[0], mouth: r(PARTS.mouth)[0],
@@ -1363,13 +1438,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     if (cat === 'skinTone') return SKIN_TONES.map(function (c, i) { return [i, '', c]; });
     return PARTS[cat];
   }
+  var pfFilled = false;
   function renderCloset() {
     var k = SKINS[st.equipped];
     drawPreview(document.getElementById('cAv'), k, me.face);
     document.querySelectorAll('[data-seg]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.seg === closetSeg)); });
     document.getElementById('facePane').hidden = closetSeg !== 'face';
+    document.getElementById('profilePane').hidden = closetSeg !== 'profile';
+    pfShow(); if (closetSeg === 'profile' && !pfFilled) { pfFill(); pfFilled = true; }
     document.getElementById('clothesPane').hidden = closetSeg !== 'clothes';
-    document.getElementById('cCount').textContent = closetSeg === 'face' ? 'パーツをタップするとすぐ反映されます' : k.name + '　（所持 ' + st.owned.length + ' / ' + SKINS.length + '）';
+    document.getElementById('cCount').textContent = closetSeg === 'profile' ? '' : closetSeg === 'face' ? 'パーツをタップするとすぐ反映されます' : k.name + '　（所持 ' + st.owned.length + ' / ' + SKINS.length + '）';
     if (closetSeg === 'face') {
       var cats = document.getElementById('cats'); cats.textContent = '';
       CATS.forEach(function (c) {
@@ -1466,7 +1544,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     if (!frLastQuery) return;
     var q = frLastQuery.replace(/^[@＠]/, '').trim().toLowerCase();
     var f = frById(q);
-    if (q === 'anata_2026') { box.innerHTML = '<p class="fr-empty">これはあなたのユーザー名です</p>'; return; }
+    if (q === pf.id) { box.innerHTML = '<p class="fr-empty">これはあなたのユーザー名です</p>'; return; }
     if (!f) { box.innerHTML = '<p class="fr-empty">「@' + esc(q) + '」は見つかりませんでした</p>'; return; }
     box.appendChild(frRow(f, '@' + esc(f.id) + ' ・ ' + esc(f.town), [actionFor(f)]));
   }
