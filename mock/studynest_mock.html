@@ -74,6 +74,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .free-say { display: flex; gap: 8px; }
 .free-say input { flex: 1; min-width: 0; border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
 .free-say button { border: 0; background: var(--pink); color: #fff; font-weight: 800; border-radius: 12px; padding: 0 16px; font-size: 13px; min-height: 44px; }
+.say-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.say-t { font-size: 13px; font-weight: 800; flex-shrink: 0; }
+.say-head .cap { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.say-min { flex-shrink: 0; width: 32px; height: 32px; border: 1px solid var(--line); background: #fff; border-radius: 10px; font-size: 18px; font-weight: 800; line-height: 1; color: var(--ink); display: flex; align-items: center; justify-content: center; padding: 0; }
+.say.min { padding: 8px 12px; cursor: pointer; }
+.say.min .free-say, .say.min .presets, .say.min .cap { display: none; }
+.say.min .say-t { flex: 1; }
+.say.min .say-t::after { content: '（タップで開く）'; font-size: 11px; color: var(--muted); font-weight: 700; }
 .hint { font-size: 11px; color: var(--ink); text-align: center; margin: 0; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @media (max-width: 400px) { .rooms button { padding: 8px 9px; font-size: 12px; } }
@@ -346,12 +354,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
         </div>
         <div class="acts">
           <button type="button" id="standBtn" hidden>立ち上がる</button>
-          <button type="button" id="chatToggle" aria-pressed="false">チャットを隠す</button>
           <button type="button" id="skipBtn">+30分（デモ）</button>
         </div>
       </div>
       <form class="say" id="say">
-        <div class="cap" id="sayCap">チャット（電話番号・SNSのID・NGワードは自動でかくれます）</div>
+        <div class="say-head"><span class="say-t">チャット</span><span class="cap" id="sayCap">電話番号・SNSのID・NGワードは自動でかくれます</span><button type="button" class="say-min" id="chatMin" aria-expanded="true" aria-label="チャットを閉じる">−</button></div>
         <div class="free-say"><input id="chatIn" type="text" maxlength="40" placeholder="メッセージを入力" aria-label="チャット"><button type="submit">送信</button></div>
         <div class="presets" id="presets"></div>
       </form>
@@ -1907,13 +1914,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   document.getElementById('logBack').addEventListener('click', function () { showTab('home'); });
   document.getElementById('lgShare').addEventListener('change', function (e) { toast(e.target.checked ? '記録をタイムラインに出します' : '記録をタイムラインに出さないようにしました'); });
 
-  // chat panel can be hidden while studying
-  document.getElementById('chatToggle').addEventListener('click', function () {
-    var say = document.getElementById('say'), hide = !say.hidden;
-    say.hidden = hide; this.setAttribute('aria-pressed', String(hide));
-    this.textContent = hide ? 'チャットを出す' : 'チャットを隠す';
-    toast(hide ? 'チャットを隠しました。集中モード' : 'チャットを表示しました');
-  });
+  // chat panel: − to minimize (like a web chat widget), + or tap the bar to open again
+  function setChatMin(min) {
+    var say = document.getElementById('say'), b = document.getElementById('chatMin');
+    say.classList.toggle('min', min);
+    b.textContent = min ? '+' : '−';
+    b.setAttribute('aria-expanded', String(!min));
+    b.setAttribute('aria-label', min ? 'チャットを開く' : 'チャットを閉じる');
+  }
+  document.getElementById('chatMin').addEventListener('click', function (e) { e.stopPropagation(); setChatMin(!document.getElementById('say').classList.contains('min')); });
+  document.getElementById('say').addEventListener('click', function () { if (this.classList.contains('min')) setChatMin(false); });
 
   me.face = Object.assign({}, DEFAULT_FACE);
   loadRoom('region'); updateHud(); showTab('home');
