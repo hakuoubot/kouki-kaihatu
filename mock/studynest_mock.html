@@ -346,6 +346,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
         </div>
         <div class="acts">
           <button type="button" id="standBtn" hidden>立ち上がる</button>
+          <button type="button" id="chatToggle" aria-pressed="false">チャットを隠す</button>
           <button type="button" id="skipBtn">+30分（デモ）</button>
         </div>
       </div>
@@ -1905,6 +1906,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   document.getElementById('openLog').addEventListener('click', function () { lseg = 'me'; showTab('log'); document.getElementById('scr-log').scrollTop = 0; });
   document.getElementById('logBack').addEventListener('click', function () { showTab('home'); });
   document.getElementById('lgShare').addEventListener('change', function (e) { toast(e.target.checked ? '記録をタイムラインに出します' : '記録をタイムラインに出さないようにしました'); });
+
+  // chat panel can be hidden while studying
+  document.getElementById('chatToggle').addEventListener('click', function () {
+    var say = document.getElementById('say'), hide = !say.hidden;
+    say.hidden = hide; this.setAttribute('aria-pressed', String(hide));
+    this.textContent = hide ? 'チャットを出す' : 'チャットを隠す';
+    toast(hide ? 'チャットを隠しました。集中モード' : 'チャットを表示しました');
+  });
 
   me.face = Object.assign({}, DEFAULT_FACE);
   loadRoom('region'); updateHud(); showTab('home');
