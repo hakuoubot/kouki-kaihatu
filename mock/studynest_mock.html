@@ -255,6 +255,38 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
 .pf-form .hint2 { font-size: 11px; font-weight: 700; color: var(--muted); }
 .pf-form .chk { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-size: 13px; background: #F8F4FA; border-radius: 12px; padding: 10px 12px; }
 .pf-form .err { font-size: 12px; color: #C0392B; font-weight: 800; margin: 0; }
+/* records (記録) */
+.log-btn { margin-left: auto; align-self: center; border: 0; background: var(--mint); color: #fff; border-radius: 14px; padding: 8px 12px; min-height: 44px; font-weight: 800; font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 2px; box-shadow: 0 3px 0 var(--mint-ink); flex-shrink: 0; }
+.backbtn { align-self: flex-start; border: 0; background: #fff; color: var(--pink-ink); border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: 13px; min-height: 38px; box-shadow: 0 2px 0 rgba(58, 46, 63, 0.08); }
+.lg-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lg-stats div { background: #F4FBF8; border-radius: 14px; padding: 10px 12px; }
+.lg-stats b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; color: var(--mint-ink); }
+.lg-stats span { font-size: 11px; color: var(--muted); font-weight: 800; }
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; align-items: end; height: 120px; margin-top: 4px; }
+.week .col { display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.week .v { font-size: 10px; color: var(--muted); font-weight: 800; font-variant-numeric: tabular-nums; }
+.week .bar2 { width: 100%; max-width: 28px; background: #BFE9DA; border-radius: 6px 6px 2px 2px; min-height: 2px; }
+.week .today .bar2 { background: var(--mint); }
+.week .d { font-size: 11px; font-weight: 800; color: var(--muted); }
+.week .today .d { color: var(--mint-ink); }
+.lg-list { display: flex; flex-direction: column; }
+.lg-list div { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.lg-list div:last-child { border-bottom: 0; }
+.lg-list b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lg-list span { color: var(--muted); }
+.tl-goal { font-size: 12px; font-weight: 800; color: var(--mint-ink); background: #E9F7F2; border-radius: 999px; padding: 4px 12px; align-self: flex-start; }
+.tl { display: flex; flex-direction: column; gap: 8px; }
+.tl-item { display: flex; gap: 10px; background: #fff; border-radius: 16px; padding: 12px; box-shadow: 0 3px 0 rgba(58, 46, 63, 0.08); }
+.tl-item canvas { width: 44px; height: 44px; border-radius: 50%; background: #F3EEF6; flex-shrink: 0; }
+.tl-item .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.tl-item .top2 { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.tl-item .nm { font-weight: 800; font-size: 14px; }
+.tl-item .meta { font-size: 11px; color: var(--muted); }
+.tl-item .txt { font-size: 13px; line-height: 1.6; }
+.tl-item .txt b { color: var(--mint-ink); }
+.tl-item .tag { font-size: 10px; font-weight: 800; color: var(--pink-ink); background: #FFE3EC; border-radius: 999px; padding: 1px 8px; align-self: flex-start; }
+.tl-item .cheer2 { align-self: flex-start; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 4px 12px; min-height: 32px; font-size: 12px; font-weight: 800; color: var(--pink-ink); }
+.tl-item .cheer2[aria-pressed="true"] { background: var(--pink); color: #fff; border-color: var(--pink); }
 .fr-on { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 4px; }
 </style>
 
@@ -329,6 +361,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
           <div class="big" id="today">1時間12分</div>
           <div class="sub">30分勉強するごとにきせかえチケット1枚</div>
         </div>
+        <button type="button" class="log-btn" id="openLog"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10"></path><path d="M10 20V4"></path><path d="M16 20v-7"></path><path d="M22 20H2"></path></svg>記録</button>
       </div>
       <div class="card jin">
         <div class="top"><span class="ttl">会津の陣取りマップ</span><span class="sub">今週の勉強時間</span></div>
@@ -395,7 +428,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
         <label>住んでいる市町村<select id="pfTown"></select><span class="hint2">陣取りマップと地区の集計に使います。家の場所や学校名は送りません。</span></label>
         <label class="chk"><input type="checkbox" id="pfShowTown" checked><span>地域の部屋で、名前のあとに市町村を表示する</span></label>
         <label>ひとこと<input id="pfBio" type="text" maxlength="30" placeholder="例: 毎晩21時から数学やってます"></label>
-        <label>いまの目標<input id="pfGoal" type="text" maxlength="20" placeholder="例: 英検2級に合格"></label>
+        <label>いまの目標<select id="pfGoal"></select><span class="hint2">同じ目標の人の記録を「記録」で見られます</span></label>
         <p class="err" id="pfErr" hidden></p>
         <button type="submit" class="pull t" style="min-height:48px;font-size:14px">保存する</button>
       </form>
@@ -486,6 +519,44 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     <p class="err" id="mkErr" hidden></p>
     <div class="row2"><button type="button" class="no" id="mkCancel">やめる</button><button type="button" class="ok" id="mkOk">作って入る</button></div>
   </div>
+
+  <section class="screen" id="scr-log" aria-label="記録" hidden>
+    <div class="wrap">
+      <button type="button" class="backbtn" id="logBack">‹ ホーム</button>
+      <div class="seg" role="group" aria-label="記録の種類">
+        <button type="button" data-lseg="me" aria-pressed="true">自分の記録</button>
+        <button type="button" data-lseg="goal" aria-pressed="false">同じ目標の人</button>
+        <button type="button" data-lseg="friends" aria-pressed="false">友だち</button>
+      </div>
+
+      <div id="logMe" class="wrap" style="width:100%">
+        <div class="card" style="display:flex;flex-direction:column;gap:10px">
+          <div class="lg-stats">
+            <div><b id="lgTotal">86時間</b><span>これまでの勉強時間</span></div>
+            <div><b id="lgWeek"></b><span>この7日間の勉強時間</span></div>
+            <div><b>12日</b><span>連続で勉強</span></div>
+            <div><b>3時間40分</b><span>いちばん長く勉強した日</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="h" style="margin:0 0 4px">この7日間</h2>
+          <div class="week" id="lgChart" role="img" aria-label="この7日間の日ごとの勉強時間"></div>
+        </div>
+        <div class="card">
+          <h2 class="h" style="margin:0 0 4px">さいきんの記録</h2>
+          <div class="lg-list" id="lgList"></div>
+        </div>
+        <label class="pf-form" style="display:block"><span class="chk" style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;background:#fff;border-radius:14px;padding:12px"><input type="checkbox" id="lgShare" checked>自分の記録をタイムラインに出す</span></label>
+        <p class="fr-note">タイムラインに出るのは、なまえ・市町村・勉強した時間と教科だけです。友だちと、同じ目標の人に表示されます。</p>
+      </div>
+
+      <div id="logTl" class="wrap" style="width:100%" hidden>
+        <div class="tl-goal" id="tlHead"></div>
+        <div class="tl" id="tlList"></div>
+        <p class="fr-note" id="tlNote"></p>
+      </div>
+    </div>
+  </section>
 
   <nav class="tabs" aria-label="メニュー">
     <button type="button" data-tab="home" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>ホーム</button>
@@ -1314,17 +1385,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   var LOCKED = { body: '#E6DCEB', hair: '#CFC3D8' };
   function showTab(tab) {
     st.tab = tab;
-    ['home', 'gacha', 'closet', 'friends'].forEach(function (t) { document.getElementById('scr-' + t).hidden = t !== tab; });
+    ['home', 'gacha', 'closet', 'friends', 'log'].forEach(function (t) { document.getElementById('scr-' + t).hidden = t !== tab; });
     document.getElementById('scr-rooms').hidden = !(tab === 'room' && !st.inRoom);
     var inRoom = tab === 'room' && st.inRoom;
     document.getElementById('roomHud').hidden = !inRoom;
     document.getElementById('roomsBar').hidden = !inRoom;
     document.getElementById('nearPill').hidden = !inRoom;
-    document.querySelectorAll('.tabs button').forEach(function (b) { if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    document.querySelectorAll('.tabs button').forEach(function (b) { if (b.dataset.tab === (tab === 'log' ? 'home' : tab)) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     if (tab === 'home') renderHome();
     if (tab === 'closet') renderCloset();
     if (tab === 'gacha') renderGacha();
     if (tab === 'friends') renderFriends();
+    if (tab === 'log') renderLog();
     if (tab === 'room' && !st.inRoom) renderLobby();
   }
   document.querySelectorAll('.tabs button').forEach(function (b) { b.addEventListener('click', function () { showTab(b.dataset.tab); }); });
@@ -1387,6 +1459,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
   });
   var TOWNS = ['会津若松市', '喜多方市', '北塩原村', '西会津町', '磐梯町', '猪苗代町', '会津坂下町', '湯川村', '柳津町', '三島町', '金山町', '昭和村', '会津美里町', '下郷町', '檜枝岐村', '只見町', '南会津町', '会津地方の外'];
   var pf = { id: 'anata_2026', grade: '高校2年', town: '南会津町', showTown: true, bio: '毎晩21時から数学やってます', goal: '看護学校に合格' };
+  var GOALS = ['看護・医療系の学校に合格', '大学に合格（国公立）', '大学に合格（私立）', '専門学校に合格', '就職試験に合格', '英検2級に合格', '定期テストで学年上位', '資格・検定に合格'];
+  pf.goal = GOALS[0];
+  GOALS.forEach(function (g) { var o = document.createElement('option'); o.textContent = g; document.getElementById('pfGoal').appendChild(o); });
   var pfTownSel = document.getElementById('pfTown');
   TOWNS.forEach(function (t) { var o = document.createElement('option'); o.textContent = t; pfTownSel.appendChild(o); });
   function pfFill() {
@@ -1416,7 +1491,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     var err = document.getElementById('pfErr');
     function fail(m) { err.textContent = m; err.hidden = false; }
     var name = document.getElementById('nameIn').value.trim(), id = document.getElementById('pfId').value.trim().replace(/^@/, '');
-    var bio = document.getElementById('pfBio').value.trim(), goal = document.getElementById('pfGoal').value.trim();
+    var bio = document.getElementById('pfBio').value.trim(), goal = document.getElementById('pfGoal').value;
     if (!name) return fail('なまえを入れてください');
     if (!/^[A-Za-z0-9_]{4,15}$/.test(id)) return fail('ユーザー名は半角の英数字と _ で4〜15文字です');
     if (FR.some(function (f) { return f.id === id.toLowerCase(); })) return fail('そのユーザー名はもう使われています');
@@ -1695,6 +1770,94 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--pink); outl
     ROOMS.splice(3, 0, r); mkClose(); enterRoom(r.id);
     if (code) setTimeout(function () { toast('ルームコード ' + code + ' を友だちに伝えよう'); }, 2300);
   });
+
+  // ---------- records (記録): my stats + timeline of same-goal people / friends ----------
+  var GOAL_SUBJ = {
+    '看護・医療系の学校に合格': ['生物', '数学', '小論文', '面接の練習', '英語'],
+    '大学に合格（国公立）': ['数学', '英語', '物理', '古文', '共通テスト過去問'],
+    '大学に合格（私立）': ['英語', '日本史', '現代文', '過去問'],
+    '専門学校に合格': ['作文', '一般常識', '面接の練習'],
+    '就職試験に合格': ['SPI', '一般常識', '面接の練習'],
+    '英検2級に合格': ['英単語', 'リスニング', '英作文', '過去問'],
+    '定期テストで学年上位': ['数学', '英語', '化学', '世界史'],
+    '資格・検定に合格': ['簿記', '漢字検定', '情報処理']
+  };
+  var TL_PEOPLE = [['ひなた', '会津若松市', 1], ['こはる', '喜多方市', 4], ['そうま', '会津坂下町', 0], ['あおい', '只見町', 5], ['れん', '猪苗代町', 2], ['ゆい', '会津美里町', 6], ['はると', '下郷町', 3], ['めい', '柳津町', 7]];
+  var WHEN = ['いま勉強中', '12分前', '38分前', '1時間前', '2時間前', '昨日 22:10', '昨日 20:45', '昨日 19:30'];
+  var cheered = {};
+  var lseg = 'me';
+  function mins(m) { return m >= 60 ? Math.floor(m / 60) + '時間' + (m % 60 ? m % 60 + '分' : '') : m + '分'; }
+  function seedOf(t) { var h = 0; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 9973; return h; }
+  function tlItems(kind) {
+    var out = [], g = pf.goal, subj = GOAL_SUBJ[g] || ['勉強'], sd = seedOf(kind === 'goal' ? g : 'friends');
+    if (kind === 'goal') {
+      for (var i = 0; i < 6; i++) {
+        var pp = TL_PEOPLE[(sd + i * 3) % TL_PEOPLE.length];
+        out.push({ key: 'g' + g + i, n: pp[0], town: pp[1], k: pp[2], m: 25 + (sd * (i + 3)) % 140, subj: subj[(sd + i) % subj.length], when: WHEN[i], goal: g, cheers: (sd + i * 7) % 9 });
+      }
+    } else {
+      FR.filter(function (f) { return f.status === 'friend'; }).forEach(function (f, i) {
+        var fg = GOALS[(seedOf(f.id)) % GOALS.length], fs = GOAL_SUBJ[fg];
+        out.push({ key: 'f' + f.id, n: f.n, town: f.town, k: f.k, m: 30 + seedOf(f.id) % 120, subj: fs[seedOf(f.id) % fs.length], when: f.on === '勉強中' ? 'いま勉強中' : WHEN[(i * 2 + 1) % WHEN.length], goal: fg, cheers: seedOf(f.id) % 6 });
+      });
+    }
+    if (document.getElementById('lgShare').checked && st.sec >= 60 && (kind === 'friends' || true)) {
+      out.unshift({ key: 'me', n: me.name + '（あなた）', town: pf.town, k: st.equipped, m: Math.floor(st.sec / 60), subj: '自習', when: 'さっき', goal: pf.goal, cheers: 0, mine: true });
+    }
+    return out;
+  }
+  function renderLog() {
+    document.querySelectorAll('[data-lseg]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lseg === lseg)); });
+    document.getElementById('logMe').hidden = lseg !== 'me';
+    document.getElementById('logTl').hidden = lseg === 'me';
+    if (lseg === 'me') {
+      var todayM = 72 + Math.floor(st.sec / 60);
+      var WD = ['日', '月', '火', '水', '木', '金', '土'], dow = new Date().getDay(), days = [], vals = [40, 0, 120, 95, 220, 150, todayM], di = 6;
+      for (var j = 6; j >= 0; j--) days.push(j === 0 ? '今日' : WD[(dow - j + 7) % 7]);
+      var max = Math.max.apply(null, vals.concat([60])), sum = 0;
+      var ch = document.getElementById('lgChart'); ch.innerHTML = '';
+      days.forEach(function (d, i) {
+        sum += vals[i];
+        var c = document.createElement('div'); c.className = 'col' + (i === di ? ' today' : '');
+        c.innerHTML = '<span class="v">' + (vals[i] ? (vals[i] / 60).toFixed(1) + 'h' : '') + '</span><div class="bar2" style="height:' + Math.round(vals[i] / max * 80) + 'px"></div><span class="d">' + d + '</span>';
+        ch.appendChild(c);
+      });
+      document.getElementById('lgWeek').textContent = mins(sum);
+      document.getElementById('lgTotal').textContent = Math.floor((86 * 60 + Math.floor(st.sec / 60)) / 60) + '時間';
+      var list = [['今日', '会津地域の部屋', todayM], ['昨日', '受験生 夜の自習室', 150], ['11月14日（土）', '会津地域の部屋', 220], ['11月13日（金）', 'なかよし部屋', 95], ['11月12日（木）', '会津地域の部屋', 120]];
+      var el = document.getElementById('lgList'); el.innerHTML = '';
+      list.forEach(function (r) { var d = document.createElement('div'); d.innerHTML = '<span>' + r[0] + ' ・ ' + esc(r[1]) + '</span><b>' + mins(r[2]) + '</b>'; el.appendChild(d); });
+      return;
+    }
+    var items = tlItems(lseg);
+    document.getElementById('tlHead').textContent = lseg === 'goal' ? '目標: ' + pf.goal : '友だちの記録';
+    document.getElementById('tlNote').textContent = lseg === 'goal' ? '目標はプロフィールで変えられます。記録をタイムラインに出している人だけが表示されます。' : '友だちの記録は、本人がタイムラインに出しているときだけ表示されます。';
+    var box = document.getElementById('tlList'); box.innerHTML = '';
+    if (!items.length) box.innerHTML = '<p class="fr-empty">' + (lseg === 'friends' ? 'まだ友だちがいません。友だちタブから追加しよう' : 'まだ記録がありません') + '</p>';
+    items.forEach(function (it) {
+      var row = document.createElement('div'); row.className = 'tl-item';
+      var cv = document.createElement('canvas'); cv.width = 88; cv.height = 88; cv.setAttribute('aria-hidden', 'true');
+      drawPreview(cv, SKINS[it.k], it.mine ? me.face : faceFor(it.k * 5 + it.n.length, SKINS[it.k].hair), true);
+      row.appendChild(cv);
+      var body = document.createElement('div'); body.className = 'body';
+      var top = '<div class="top2"><span class="nm">' + esc(it.n) + '</span><span class="meta">' + esc(it.town) + ' ・ ' + esc(it.when) + '</span></div>';
+      var txt = '<div class="txt">' + esc(it.subj) + 'を <b>' + mins(it.m) + '</b> 勉強' + (it.when === 'いま勉強中' ? '中' : 'しました') + '</div>';
+      var tag = lseg === 'friends' ? '<span class="tag">' + esc(it.goal) + '</span>' : '';
+      body.innerHTML = top + txt + tag;
+      if (!it.mine) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'cheer2';
+        var on = !!cheered[it.key];
+        b.setAttribute('aria-pressed', String(on)); b.textContent = 'がんばれ ' + (it.cheers + (on ? 1 : 0));
+        b.addEventListener('click', function () { cheered[it.key] = !cheered[it.key]; if (cheered[it.key]) toast(it.n + 'さんに「がんばれ」を送りました'); renderLog(); });
+        body.appendChild(b);
+      }
+      row.appendChild(body); box.appendChild(row);
+    });
+  }
+  document.querySelectorAll('[data-lseg]').forEach(function (b) { b.addEventListener('click', function () { lseg = b.dataset.lseg; renderLog(); }); });
+  document.getElementById('openLog').addEventListener('click', function () { lseg = 'me'; showTab('log'); document.getElementById('scr-log').scrollTop = 0; });
+  document.getElementById('logBack').addEventListener('click', function () { showTab('home'); });
+  document.getElementById('lgShare').addEventListener('change', function (e) { toast(e.target.checked ? '記録をタイムラインに出します' : '記録をタイムラインに出さないようにしました'); });
 
   me.face = Object.assign({}, DEFAULT_FACE);
   loadRoom('region'); updateHud(); showTab('home');
