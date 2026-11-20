@@ -33,8 +33,9 @@ window.Room = (function () {
     vw = canvas.clientWidth; vh = canvas.clientHeight;
     canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
     // 部屋全体（横 -320〜384、縦 -128〜366）が画面に入るように
-    // 上のボタン(56px)と下のタイマー(150px)をよけて、部屋全体が入るように
-    const top = 56, bottom = 150, avail = Math.max(200, vh - top - bottom);
+    // 上のボタンと下のチャット・タイマーをよけて、部屋全体が入るように（opts.insets で渡す）
+    const ins = opts.insets ? opts.insets() : { top: 56, bottom: 150 };
+    const top = ins.top, bottom = ins.bottom, avail = Math.max(200, vh - top - bottom);
     scale = Math.min(vw / 740, avail / 510, 1.4);
     ox = vw / 2 - 32 * scale;
     oy = top + (avail - 494 * scale) / 2 + 128 * scale;
@@ -53,7 +54,8 @@ window.Room = (function () {
   function onRightWall(x, z, draw) { const p = P(x, 0, z); ctx.save(); ctx.translate(p[0], p[1]); ctx.transform(1, 0.5, 0, 1, 0, 0); draw(); ctx.restore(); }
   function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
 
-  function seatTaken(i) { for (const a of avatars.values()) if (a.seat === i) return true; return false; }
+  let hiddenSeats = new Set(); // ブロックの相手が座っている席（見えないが使用中）
+  function seatTaken(i) { if (hiddenSeats.has(i)) return true; for (const a of avatars.values()) if (a.seat === i) return true; return false; }
 
   // ===== 内装テーマ =====
   function onLeftWall(y, z, draw) { const p = P(0, y, z); ctx.save(); ctx.translate(p[0], p[1]); ctx.transform(1, -0.5, 0, 1, 0, 0); draw(); ctx.restore(); }
@@ -522,6 +524,35 @@ window.Room = (function () {
     const w = ctx.measureText(label).width + 14;
     rr(X - w / 2, hy - 46, w, 20, 10); ctx.fillStyle = a.me ? '#00A86B' : 'rgba(255,255,255,.95)'; ctx.fill();
     ctx.fillStyle = a.me ? '#fff' : (a.away ? '#999' : '#333'); ctx.fillText(label, X, hy - 36);
+    a.hx = X; a.hy = hy; // タップの当たり判定とふきだしに使う
+  }
+
+  // ===== ふきだし・スタンプのきらきら =====
+  const bubbles = new Map(); // userId -> {text, until}
+  let particles = [];
+  function drawBubble(a, b) {
+    ctx.font = '700 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const lines = []; let line = '';
+    for (const ch of b.text) { if (ctx.measureText(line + ch).width > 150) { lines.push(line); line = ''; } line += ch; }
+    if (line) lines.push(line);
+    const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 20, h = lines.length * 17 + 12;
+    const x = a.hx, y = a.hy - 60 - h;
+    rr(x - w / 2, y, w, h, 10); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.strokeStyle = '#00A86B'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 6, y + h); ctx.lineTo(x, y + h + 8); ctx.lineTo(x + 6, y + h); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+    ctx.fillStyle = '#333'; lines.forEach((l, i) => ctx.fillText(l, x, y + 14 + i * 17));
+  }
+  function drawOverlays(now) {
+    for (const [id, b] of bubbles) { const a = avatars.get(id); if (!a || now > b.until) { bubbles.delete(id); continue; } if (a.hx != null) drawBubble(a, b); }
+    particles.forEach((p) => {
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+      ctx.fillStyle = p.c; ctx.font = `700 ${p.size}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(p.ch, p.x, p.y);
+    });
+    ctx.globalAlpha = 1;
+  }
+  function fx(userId, kind) {
+    const a = avatars.get(userId); if (!a || a.hx == null || reduceMotion) return;
+    const chars = kind === 'cheer' ? ['★', '♪', '★'] : ['✿', '★', '♡'];
+    for (let i = 0; i < 14; i++) particles.push({ x: a.hx, y: a.hy - 20, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 80, life: 1.2, size: 12 + Math.random() * 8, ch: chars[i % 3], c: ['#FFC94D', '#FF7FA8', '#46C2A6'][i % 3] });
   }
 
   // マス目の上の道さがし（机・棚などは通れない。イスは目的地のときだけ通れる）
@@ -583,6 +614,7 @@ window.Room = (function () {
     seats.forEach((s) => list.push({ d: s.x + s.y + 0.9, f: () => drawChair(s) }));
     for (const a of avatars.values()) list.push({ d: a.px + a.py + (a.seat != null ? 0.05 : 0), f: () => drawAvatar(a, t) });
     list.sort((a, b) => a.d - b.d).forEach((o) => o.f());
+    drawOverlays(Date.now());
   }
 
   let last = 0;
@@ -590,6 +622,8 @@ window.Room = (function () {
     if (!running) return;
     const dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts;
     if (!reduceMotion) snowF.forEach((f) => { f.y += f.v * dt; if (f.y > 1) { f.y = 0; f.x = Math.random(); } });
+    particles.forEach((p) => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 120 * dt; p.life -= dt; });
+    particles = particles.filter((p) => p.life > 0);
     update(dt); render(ts / 1000);
     requestAnimationFrame(frame);
   }
@@ -597,6 +631,10 @@ window.Room = (function () {
   function onTap(e) {
     const r = canvas.getBoundingClientRect();
     const wx = (e.clientX - r.left - ox) / scale, wy = (e.clientY - r.top - oy) / scale;
+    // 人（頭のあたり）を先に調べる。自分はのぞく
+    let who = null, wd = 30;
+    for (const a of avatars.values()) { if (a.me || a.hx == null) continue; const d = Math.hypot(wx - a.hx, wy - (a.hy - 10)); if (d < wd) { wd = d; who = a; } }
+    if (who && opts.onPersonTap) return opts.onPersonTap(who.userId, who.nickname);
     let best = null, bd = 40;
     seats.forEach((s) => {
       const c = P(s.x + 0.5, s.y + 0.5, 16), d = Math.hypot(wx - c[0], (wy - c[1]) * 1.4);
@@ -613,7 +651,12 @@ window.Room = (function () {
       canvas.addEventListener('pointerup', onTap);
     },
     setState,
+    relayout() { if (running) resize(); },
+    setHiddenSeats(list) { hiddenSeats = new Set(list || []); },
+    say(userId, text) { bubbles.set(userId, { text, until: Date.now() + 6000 }); },
+    fx,
     start(theme, floor) {
+      bubbles.clear(); particles = [];
       setTheme(THEMES[theme] ? theme : 'classic'); floorStyle = FLOORS[floor] ? floor : null;
       canvas.parentElement.style.background = T.bg;
       avatars = new Map(); running = true; resize(); requestAnimationFrame(frame);

@@ -59,7 +59,19 @@
       <span id="room-count" class="chip"></span>
     </div>
     <div class="room-bottom">
-      <div id="hint">光っているイスをタップして座ろう</div>
+      <!-- チャット -->
+      <section id="chat" class="chat">
+        <div class="chat-head">
+          <b>チャット</b><span class="cap">電話番号・SNSのID・NGワードは自動でかくれます</span>
+          <button type="button" id="chat-min" class="chat-min" aria-expanded="true" aria-label="チャットを閉じる">−</button>
+        </div>
+        <ol id="chat-log" class="chat-log" aria-live="polite"></ol>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-in" maxlength="40" placeholder="メッセージ（40文字まで）" autocomplete="off" aria-label="チャット">
+          <button type="submit">送信</button>
+        </form>
+      </section>
+      <div id="hint">光っているイスをタップして座ろう・人をタップすると「がんばれ」</div>
       <div id="timer-box" hidden>
         <div class="timer" id="timer">0:00:00</div>
         <div class="tsub" id="timer-sub">次のチケットまで 30分</div>
@@ -67,6 +79,39 @@
       </div>
     </div>
   </main>
+
+  <!-- 人をタップしたときのメニュー -->
+  <div id="act" class="dialog" hidden>
+    <div class="dialog-card act">
+      <h2 id="act-name"></h2>
+      <button class="btn" data-stamp="1">「がんばれ」を送る</button>
+      <button class="btn sub" data-stamp="2">「おつかれ」を送る</button>
+      <button class="btn sub" data-stamp="3">「いっしょにがんばろう」を送る</button>
+      <div class="act-row">
+        <button class="btn ghost-s" id="act-block">ブロック</button>
+        <button class="btn ghost-s" id="act-report">通報</button>
+      </div>
+      <button class="btn ghost-s" id="act-close">とじる</button>
+    </div>
+  </div>
+
+  <!-- G17 通報 -->
+  <div id="report" class="dialog" hidden>
+    <form class="dialog-card report" id="report-form">
+      <h2><span id="rep-name"></span>を通報</h2>
+      <p class="small">通報したことは相手に知らされません。</p>
+      <label><input type="radio" name="reason" value="1"> 悪口・いやがらせ</label>
+      <label><input type="radio" name="reason" value="2"> 連絡先やSNSを聞かれた・書かれた</label>
+      <label><input type="radio" name="reason" value="3"> 会おうと言われた</label>
+      <label><input type="radio" name="reason" value="4"> 名前やアバターがよくない</label>
+      <label><input type="radio" name="reason" value="5"> なりすまし</label>
+      <label><input type="radio" name="reason" value="9"> その他</label>
+      <textarea id="rep-detail" maxlength="100" placeholder="くわしく（書かなくてもOK・100文字まで）"></textarea>
+      <label><input type="checkbox" id="rep-block" checked> この人をブロックもする</label>
+      <button class="btn" type="submit">通報する</button>
+      <button class="btn ghost-s" type="button" id="rep-cancel">やめる</button>
+    </form>
+  </div>
 
   <!-- G16 勉強おわりの結果 -->
   <div id="result" class="dialog" hidden>
