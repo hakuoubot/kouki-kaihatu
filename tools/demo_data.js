@@ -7,6 +7,8 @@ const mysql = require('mysql2/promise');
 // 地区ごとの人数（5人未満の町は、マップで数字が出ないことを確かめるため）
 const PEOPLE = { '07202': 60, '07208': 25, '07421': 14, '07447': 12, '07408': 9, '07368': 8, '07362': 6, '07405': 5, '07423': 5,
   '07367': 3, '07402': 2, '07422': 2, '07407': 3, '07444': 1, '07445': 1, '07446': 1, '07364': 1 };
+// 質問1の答えの出やすさ（1=雪・天気 2=バスがない 3=遠い 4=施設が閉まってる 5=家のほうが楽 6=その他）
+const WHY = { '07202': [4, 4, 4, 5, 6], '07368': [1, 4, 4, 3], '07367': [1, 1, 3], '07362': [1, 2, 3], '07421': [2, 2, 3, 5], '07423': [2, 2, 3], '07208': [3, 4, 4, 5] };
 const NAMES = ['ゆず', 'しずく', 'たろう', 'kei', 'もち', 'そら', 'りん', 'なな', 'はる', 'みお', 'ゆう', 'ひな', 'そうた', 'あおい', 'こはる'];
 
 (async () => {
@@ -14,6 +16,7 @@ const NAMES = ['ゆず', 'しずく', 'たろう', 'kei', 'もち', 'そら', '�
     password: process.env.DB_PASSWORD, database: process.env.DB_NAME });
   await db.query("SET time_zone = '+09:00'");
   await db.query("DELETE s FROM study_session_table s JOIN user_table u USING (user_id) WHERE u.login_id LIKE 'demo\\_%'");
+  await db.query("DELETE a FROM survey_answer_table a JOIN user_table u USING (user_id) WHERE u.login_id LIKE 'demo\\_%'");
   await db.query("DELETE FROM user_table WHERE login_id LIKE 'demo\\_%'");
   let n = 0, sessions = 0;
   // 日本時間で考える（パソコンの時計がどの国の設定でも同じになるように）
@@ -39,6 +42,13 @@ const NAMES = ['ゆず', 'しずく', 'たろう', 'kei', 'もち', 'そら', '�
           `INSERT INTO study_session_table (user_id, room_id, seat_no, started_at, ended_at, study_minutes, is_shared, tickets_earned)
            VALUES (?, 1, NULL, ?, ?, ?, TRUE, ?)`, [r.insertId, fmt(start), fmt(start + min * 60000), min, Math.floor(min / 30)]);
         sessions++;
+        // ワンタップ調査（質問1: なぜ家で勉強？）にも半分くらい答えたことにする
+        if (Math.random() < 0.6) {
+          const why = WHY[area] || [2, 3, 4];
+          await db.query(
+            `INSERT INTO survey_answer_table (user_id, area_code, question_no, answer_no, answered_at) VALUES (?, ?, 1, ?, ?)`,
+            [r.insertId, area, why[Math.floor(Math.random() * why.length)], fmt(start)]);
+        }
       }
     }
   }

@@ -39,7 +39,7 @@ window.JinMap = (function () {
     if (!a) return;
     const b = document.createElement('b'); b.textContent = a.name + (a.code === data.myArea ? '（あなたの町）' : ''); info.append(b, document.createElement('br'));
     if (!a.open) info.append(`参加者が${data.minPeople}人未満なので、数字は出していません。`);
-    else info.append(`今週 ${hoursText(a.minutes)} ・ 参加 ${a.people}人` + (a.topHour != null ? ` ・ いちばん多い時間 ${a.topHour}時台` : ''));
+    else info.append(`今週 ${hoursText(a.minutes)} ・ 参加 ${a.people}人` + (a.topHour != null ? ` ・ いちばん多い時間 ${a.topHour}時台` : '') + (a.topWhy ? ` ・ 家で勉強する理由1位「${a.topWhy}」` : ''));
     if (a.code === data.myArea && data.myMinutes > 0) { info.append(document.createElement('br'), `あなたは今週 ${hoursText(data.myMinutes)} ぬりました`); }
   }
   return {

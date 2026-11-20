@@ -86,6 +86,13 @@ function connect() {
   });
   socket.on('error_msg', (t) => toast(t));
   socket.on('done_msg', (t) => toast(t));
+  socket.on('survey', (q) => {
+    $('sv-q').textContent = q.text; $('sv-opts').textContent = '';
+    q.options.forEach((o, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = o;
+      b.onclick = () => { socket.emit('survey_answer', { questionNo: q.questionNo, answerNo: i + 1 }); $('survey').hidden = true; };
+      $('sv-opts').append(b); });
+    setTimeout(() => ($('survey').hidden = false), 900); // 座ってひと息ついてから出す
+  });
   socket.on('chat_log', (list) => { $('chat-log').innerHTML = ''; list.forEach(addChat); });
   socket.on('chat', (c) => { addChat(c); Room.say(c.userId, c.body); });
   socket.on('stamp', (s) => {
@@ -107,6 +114,7 @@ function openRoom(id, name, theme, floor) {
   socket.emit('join', id);
 }
 function leaveRoom() {
+  $('survey').hidden = true;
   if (currentRoom != null) socket.emit('leave');
   currentRoom = null;
   Room.stop();
@@ -127,6 +135,7 @@ function addChat(c) {
   while ($('chat-log').children.length > 50) $('chat-log').firstChild.remove();
   $('chat-log').scrollTop = $('chat-log').scrollHeight;
 }
+$('sv-skip').onclick = () => { socket.emit('survey_skip'); $('survey').hidden = true; };
 $('chat-form').onsubmit = (e) => {
   e.preventDefault();
   const t = $('chat-in').value.trim();

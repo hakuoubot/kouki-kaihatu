@@ -3,10 +3,13 @@
 //                     chat(text) / stamp({to, type}) / block(userId) / report({to, reason, detail, alsoBlock})
 //  server -> client : state({roomId, capacity, members}) / sat / result({minutes, tickets}) / error_msg(文)
 //                     chat({userId, nickname, body, at}) / chat_log([...]) / stamp({from, to, type, fromName})
+//                     survey({questionNo, text, options})  ← 座ったとき、今日まだ答えていなければ
+//  client -> server : survey_answer({questionNo, answerNo}) / survey_skip
 // ブロックした人・された人は、おたがいの画面に出ない（人もチャットもスタンプも）
 const db = require('./db');
 const live = require('./live');
 const { mask } = require('./filter');
+const { QUESTIONS, pickQuestion } = require('./survey');
 
 const CHAT_MAX = 40;              // チャット1回の文字数
 const CHAT_GAP_MS = 2000;         // 2秒に1回まで
@@ -150,6 +153,7 @@ module.exports = (io) => {
       m.sessionId = ins.insertId;
       socket.emit('sat', { seat: seatNo });
       broadcast(roomId);
+      if (!m.surveySkipped) { const q = await pickQuestion(db, userId); if (q) socket.emit('survey', q); }
     }));
 
     socket.on('stand', safe(async () => {
@@ -230,6 +234,24 @@ module.exports = (io) => {
       if (alsoBlock) await doBlock(to);
       socket.emit('done_msg', '通報しました。運営が確認します');
     }));
+
+    // ワンタップ調査の答え（1日1問。答えたらチケット+1）
+    socket.on('survey_answer', safe(async ({ questionNo, answerNo } = {}) => {
+      questionNo = Number(questionNo); answerNo = Number(answerNo);
+      const q = QUESTIONS[questionNo];
+      if (!q || !Number.isInteger(answerNo) || answerNo < 1 || answerNo > q.options.length) return;
+      const [[today]] = await db.query(
+        'SELECT COUNT(*) AS n FROM survey_answer_table WHERE user_id = ? AND answered_at >= CURDATE()', [userId]);
+      if (today.n > 0) return socket.emit('error_msg', '今日の質問はもう答えています');
+      const [[user]] = await db.query('SELECT area_code FROM user_table WHERE user_id = ?', [userId]);
+      await db.query(
+        `INSERT INTO survey_answer_table (user_id, area_code, question_no, answer_no, session_id, answered_at) VALUES (?, ?, ?, ?, ?, NOW())`,
+        [userId, user.area_code, questionNo, answerNo, me()?.sessionId || null]);
+      await db.query(
+        `INSERT INTO wallet_table (user_id, ticket_count) VALUES (?, 1) ON DUPLICATE KEY UPDATE ticket_count = ticket_count + 1`, [userId]);
+      socket.emit('done_msg', '回答ありがとう！チケット+1');
+    }));
+    socket.on('survey_skip', () => { const m = me(); if (m) m.surveySkipped = true; }); // 今回の入室中はもう聞かない
 
     socket.on('leave', safe(leave));
     socket.on('disconnect', safe(leave));
