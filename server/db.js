@@ -1,7 +1,7 @@
 // MySQL への接続（ほかのファイルは require('./db') で使う）
 const mysql = require('mysql2/promise');
 
-module.exports = mysql.createPool({
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
@@ -11,3 +11,8 @@ module.exports = mysql.createPool({
   timezone: '+09:00',
   connectionLimit: 10,
 });
+
+// NOW() や CURDATE()（「今日」の集計）を日本時間にする
+pool.pool.on('connection', (conn) => conn.query("SET time_zone = '+09:00'"));
+
+module.exports = pool;

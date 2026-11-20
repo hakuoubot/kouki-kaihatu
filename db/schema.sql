@@ -95,6 +95,8 @@ CREATE TABLE `room_table` (
   `capacity` TINYINT NOT NULL COMMENT '定員：座席数',
   `owner_user_id` INT COMMENT '作成者ID：ユーザーが作った部屋の作成者',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '作成日時',
+  `theme` VARCHAR(20) COMMENT '内装：【追加】部屋の見た目。classic / aizu / washitsu / library / cafe / attic / school / train / rooftop / spring。空なら classic',
+  `floor_style` VARCHAR(20) COMMENT '床：【追加】床の柄。planks / parquet / stone / hex / checker / carpet / rug / concrete / grass。空なら内装のまま',
   PRIMARY KEY (`room_id`),
   INDEX `idx_room_type` (`room_type`),
   INDEX `idx_category` (`category`),
