@@ -52,7 +52,8 @@ async function enter(user) {
 // ---------- 部屋一覧 ----------
 async function openLobby() {
   show('lobby');
-  const [rooms, today] = await Promise.all([api('/rooms'), api('/me/today')]);
+  const [rooms, today, map] = await Promise.all([api('/rooms'), api('/me/today'), api('/map')]);
+  JinMap.show(map);
   $('today-min').textContent = today.minutes;
   $('today-tk').textContent = today.tickets;
   $('room-list').innerHTML = rooms.map((r) => `
@@ -167,6 +168,7 @@ $('report-form').onsubmit = (e) => {
 const resetBlockBtn = () => { $('act-block').dataset.sure = ''; $('act-block').textContent = 'ブロック'; };
 new MutationObserver(resetBlockBtn).observe($('act'), { attributes: true, attributeFilter: ['hidden'] });
 
+JinMap.init($('jin-map'), $('jin-info'));
 Room.init($('room-canvas'), {
   insets: () => ({ top: 56, bottom: document.querySelector('.room-bottom').offsetHeight + 8 }),
   onPersonTap: openAct,

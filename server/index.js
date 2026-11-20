@@ -23,6 +23,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use('/api', require('./routes/auth'));
 app.use('/api', require('./routes/rooms'));
+app.use('/api', require('./routes/map'));
 
 // 地区の一覧（新規登録の「住んでいる市町村」で使う）
 app.get('/api/areas', async (req, res) => {

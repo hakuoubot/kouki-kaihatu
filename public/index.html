@@ -45,6 +45,13 @@
       <div><b id="me-name"></b>さん</div>
       <div class="today">今日 <b id="today-min">0</b>分 ・ チケット <b id="today-tk">0</b>枚</div>
     </header>
+    <!-- 地区の陣取りマップ -->
+    <section class="card jin">
+      <div class="jin-top"><b>会津の陣取りマップ</b><span>今週の勉強時間</span></div>
+      <svg id="jin-map" viewBox="0 0 330 270" role="group" aria-label="会津の市町村ごとの今週の勉強時間。タップでくわしく"></svg>
+      <div class="legend"><i style="background:#E6DCEB"></i>5人未満（非表示）<i style="background:#BFE9DA"></i>少ない<i style="background:#1E9C7E"></i>多い<span>位置は模式図</span></div>
+      <div class="jin-info" id="jin-info"></div>
+    </section>
     <h2>部屋をえらぶ</h2>
     <ul id="room-list" class="room-list"></ul>
     <button id="logout" class="btn ghost">ログアウト</button>
@@ -127,6 +134,7 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/room.js"></script>
+  <script src="/js/map.js"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>
