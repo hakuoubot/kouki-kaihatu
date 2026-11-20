@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StudyNest</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#00A86B">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main id="app">
+    <h1>StudyNest</h1>
+    <p class="sub">地域みんなの自習室。</p>
+
+    <!-- G01 ログイン -->
+    <section id="login">
+      <h2>ログイン</h2>
+      <input id="li-id" placeholder="ログインID" autocomplete="username">
+      <input id="li-pw" type="password" placeholder="パスワード" autocomplete="current-password">
+      <button id="li-btn">ログイン</button>
+      <a href="#" id="to-signup">はじめての人は新規登録</a>
+    </section>
+
+    <!-- G14 新規登録 -->
+    <section id="signup" hidden>
+      <h2>新規登録</h2>
+      <input id="su-id" placeholder="ログインID（ほかの人には見えません）">
+      <input id="su-pw" type="password" placeholder="パスワード（8文字以上）">
+      <input id="su-user" placeholder="ユーザー名 @（半角4〜15文字）">
+      <input id="su-nick" placeholder="なまえ（8文字まで・本名はNG）" maxlength="8">
+      <select id="su-area"></select>
+      <label><input type="checkbox" id="su-parent"> 保護者の同意をもらいました</label>
+      <label><input type="checkbox" id="su-terms"> 利用規約とプライバシーポリシーに同意します</label>
+      <button id="su-btn">登録する</button>
+      <a href="#" id="to-login">ログインにもどる</a>
+    </section>
+
+    <!-- ログイン後（仮） -->
+    <section id="home" hidden>
+      <h2>こんにちは、<span id="me-name"></span>さん</h2>
+      <p>部屋にいる人: <span id="members">-</span></p>
+      <button id="logout">ログアウト</button>
+    </section>
+
+    <p id="msg" class="msg"></p>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
