@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>StudyNest</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#00A86B">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- G01 ログイン -->
+  <main id="scr-login" class="form-screen" hidden>
+    <h1>StudyNest</h1>
+    <p class="sub">地域みんなの自習室。</p>
+    <section class="card">
+      <h2>ログイン</h2>
+      <input id="li-id" placeholder="ログインID" autocomplete="username">
+      <input id="li-pw" type="password" placeholder="パスワード" autocomplete="current-password">
+      <button id="li-btn" class="btn">ログイン</button>
+      <a href="#" id="to-signup">はじめての人は新規登録</a>
+    </section>
+  </main>
+
+  <!-- G14 新規登録 -->
+  <main id="scr-signup" class="form-screen" hidden>
+    <h1>StudyNest</h1>
+    <section class="card">
+      <h2>新規登録</h2>
+      <input id="su-id" placeholder="ログインID（ほかの人には見えません）" autocomplete="username">
+      <input id="su-pw" type="password" placeholder="パスワード（8文字以上）" autocomplete="new-password">
+      <input id="su-user" placeholder="ユーザー名 @（半角4〜15文字）">
+      <input id="su-nick" placeholder="なまえ（8文字まで・本名はNG）" maxlength="8">
+      <select id="su-area"></select>
+      <label><input type="checkbox" id="su-parent"> 保護者の同意をもらいました</label>
+      <label><input type="checkbox" id="su-terms"> 利用規約とプライバシーポリシーに同意します</label>
+      <button id="su-btn" class="btn">登録する</button>
+      <a href="#" id="to-login">ログインにもどる</a>
+    </section>
+  </main>
+
+  <!-- 部屋一覧 -->
+  <main id="scr-lobby" class="form-screen" hidden>
+    <header class="top">
+      <div><b id="me-name"></b>さん</div>
+      <div class="today">今日 <b id="today-min">0</b>分 ・ チケット <b id="today-tk">0</b>枚</div>
+    </header>
+    <!-- 地区の陣取りマップ -->
+    <section class="card jin">
+      <div class="jin-top"><b>会津の陣取りマップ</b><span>今週の勉強時間</span></div>
+      <svg id="jin-map" viewBox="0 0 330 270" role="group" aria-label="会津の市町村ごとの今週の勉強時間。タップでくわしく"></svg>
+      <div class="legend"><i style="background:#E6DCEB"></i>5人未満（非表示）<i style="background:#BFE9DA"></i>少ない<i style="background:#1E9C7E"></i>多い<span>位置は模式図</span></div>
+      <div class="jin-info" id="jin-info"></div>
+    </section>
+    <h2>部屋をえらぶ</h2>
+    <ul id="room-list" class="room-list"></ul>
+    <button id="logout" class="btn ghost">ログアウト</button>
+  </main>
+
+  <!-- 自習室 -->
+  <main id="scr-room" class="room-screen" hidden>
+    <canvas id="room-canvas"></canvas>
+    <div class="room-top">
+      <button id="back-lobby" class="chip">‹ 部屋一覧</button>
+      <b id="room-title"></b>
+      <span id="room-count" class="chip"></span>
+    </div>
+    <div class="room-bottom">
+      <!-- チャット -->
+      <section id="chat" class="chat">
+        <div class="chat-head">
+          <b>チャット</b><span class="cap">電話番号・SNSのID・NGワードは自動でかくれます</span>
+          <button type="button" id="chat-min" class="chat-min" aria-expanded="true" aria-label="チャットを閉じる">−</button>
+        </div>
+        <ol id="chat-log" class="chat-log" aria-live="polite"></ol>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-in" maxlength="40" placeholder="メッセージ（40文字まで）" autocomplete="off" aria-label="チャット">
+          <button type="submit">送信</button>
+        </form>
+      </section>
+      <div id="hint">光っているイスをタップして座ろう・人をタップすると「がんばれ」</div>
+      <div id="timer-box" hidden>
+        <div class="timer" id="timer">0:00:00</div>
+        <div class="tsub" id="timer-sub">次のチケットまで 30分</div>
+        <button id="stand-btn" class="btn">立ち上がる（勉強おわり）</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ワンタップ調査 -->
+  <div id="survey" class="survey" hidden role="dialog" aria-labelledby="sv-q">
+    <div class="sv-head"><span>ひとこと調査 ・ 答えるとチケット+1</span><button id="sv-skip" type="button">スキップ</button></div>
+    <b id="sv-q"></b>
+    <div id="sv-opts" class="sv-opts"></div>
+    <p class="small">答えは町ごとにまとめて、市や町が「夜の自習場所」を考えるのに使います。だれが答えたかは出ません。</p>
+  </div>
+
+  <!-- 人をタップしたときのメニュー -->
+  <div id="act" class="dialog" hidden>
+    <div class="dialog-card act">
+      <h2 id="act-name"></h2>
+      <button class="btn" data-stamp="1">「がんばれ」を送る</button>
+      <button class="btn sub" data-stamp="2">「おつかれ」を送る</button>
+      <button class="btn sub" data-stamp="3">「いっしょにがんばろう」を送る</button>
+      <div class="act-row">
+        <button class="btn ghost-s" id="act-block">ブロック</button>
+        <button class="btn ghost-s" id="act-report">通報</button>
+      </div>
+      <button class="btn ghost-s" id="act-close">とじる</button>
+    </div>
+  </div>
+
+  <!-- G17 通報 -->
+  <div id="report" class="dialog" hidden>
+    <form class="dialog-card report" id="report-form">
+      <h2><span id="rep-name"></span>を通報</h2>
+      <p class="small">通報したことは相手に知らされません。</p>
+      <label><input type="radio" name="reason" value="1"> 悪口・いやがらせ</label>
+      <label><input type="radio" name="reason" value="2"> 連絡先やSNSを聞かれた・書かれた</label>
+      <label><input type="radio" name="reason" value="3"> 会おうと言われた</label>
+      <label><input type="radio" name="reason" value="4"> 名前やアバターがよくない</label>
+      <label><input type="radio" name="reason" value="5"> なりすまし</label>
+      <label><input type="radio" name="reason" value="9"> その他</label>
+      <textarea id="rep-detail" maxlength="100" placeholder="くわしく（書かなくてもOK・100文字まで）"></textarea>
+      <label><input type="checkbox" id="rep-block" checked> この人をブロックもする</label>
+      <button class="btn" type="submit">通報する</button>
+      <button class="btn ghost-s" type="button" id="rep-cancel">やめる</button>
+    </form>
+  </div>
+
+  <!-- G16 勉強おわりの結果 -->
+  <div id="result" class="dialog" hidden>
+    <div class="dialog-card">
+      <h2>おつかれさま！</h2>
+      <p class="big"><b id="res-min">0</b>分 勉強しました</p>
+      <p id="res-tk"></p>
+      <button id="res-ok" class="btn">とじる</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/room.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

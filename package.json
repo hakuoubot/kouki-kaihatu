@@ -1,0 +1,25 @@
+{
+  "name": "studynest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "StudyNest 地域みんなの自習室",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "db:schema": "python3 tools/make_schema.py",
+    "db:init": "node tools/db_init.js",
+    "db:demo": "node tools/demo_data.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.24.6",
+    "socket.io": "^4.8.4"
+  }
+}
